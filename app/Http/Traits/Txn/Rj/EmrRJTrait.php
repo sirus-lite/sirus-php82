@@ -265,4 +265,18 @@ trait EmrRJTrait
 
         return $rjStatus->rj_status !== 'A';
     }
+
+    protected function checkEmrRJStatus(string $rjNo): bool
+    {
+        $rjStatus = DB::table('rstxn_rjhdrs')
+            ->select('erm_status')
+            ->where('rj_no', $rjNo)
+            ->first();
+
+        if (!$rjStatus || empty($rjStatus->rj_status)) {
+            return false;
+        }
+
+        return $rjStatus->rj_status !== 'A';
+    }
 }

@@ -79,12 +79,23 @@ new class extends Component {
         $this->dispatch('daftar-rj.openEdit', rjNo: $rjNo);
     }
 
+    public function openRekamMedisDokter(string $rjNo): void
+    {
+        $this->dispatch('daftar-rj.rekam-medis.openDokter', rjNo: $rjNo);
+    }
+
+    public function openRekamMedisPerawat(string $rjNo): void
+    {
+        $this->dispatch('daftar-rj.rekam-medis.openPerawat', rjNo: $rjNo);
+    }
+
     /* -------------------------
     | Request Delete (delegate ke actions)
     * ------------------------- */
     public function requestDelete(string $rjNo): void
     {
-        $this->dispatch('daftar-rj.requestDelete', rjNo: $rjNo);
+        $this->dispatch('toast', type: 'warning', message: 'Modul Rawat Jalan - Dalam Pengembangan');
+        // $this->dispatch('daftar-rj.requestDelete', rjNo: $rjNo);
     }
 
     /* -------------------------
@@ -778,25 +789,25 @@ new class extends Component {
                                                 <x-slot name="content">
 
                                                     <div class="py-1 space-y-0.5">
+                                                        @if ($row->lab_status || $row->rad_status)
+                                                            <div class="flex space-x-1">
+
+                                                                {{-- Tombol TaskId4 Selesai Pelayanan --}}
+                                                                <livewire:pages::transaksi.rj.task-id-pelayanan.task-id-4
+                                                                    :rjNo="$row->rj_no"
+                                                                    :wire:key="'taskid4-'.$row->rj_no" />
+
+                                                                {{-- Tombol TaskId5 Panggil Antrian --}}
+                                                                <livewire:pages::transaksi.rj.task-id-pelayanan.task-id-5
+                                                                    :rjNo="$row->rj_no"
+                                                                    :wire:key="'taskid5-'.$row->rj_no" />
+                                                        @endif
+
 
                                                         {{-- Ubah --}}
                                                         <x-dropdown-link href="#"
                                                             wire:click.prevent="openEdit('{{ $row->rj_no }}')"
-                                                            class="px-3 py-1.5 text-md mb-10">
-
-                                                            @if ($row->lab_status || $row->rad_status)
-                                                                <div class="flex space-x-1">
-
-                                                                    {{-- Tombol TaskId4 Selesai Pelayanan --}}
-                                                                    <livewire:pages::transaksi.rj.task-id-pelayanan.task-id-4
-                                                                        :rjNo="$row->rj_no"
-                                                                        :wire:key="'taskid4-'.$row->rj_no" />
-
-                                                                    {{-- Tombol TaskId5 Panggil Antrian --}}
-                                                                    <livewire:pages::transaksi.rj.task-id-pelayanan.task-id-5
-                                                                        :rjNo="$row->rj_no"
-                                                                        :wire:key="'taskid5-'.$row->rj_no" />
-                                                            @endif
+                                                            class="px-3 py-1.5 text-md ">
 
                                                             <div class="flex items-start gap-2">
                                                                 <svg class="w-6 h-6 mt-0.5" fill="none"
@@ -808,7 +819,7 @@ new class extends Component {
                                                                 </svg>
 
                                                                 <span>
-                                                                    Ubah <br>
+                                                                    Pendaftaran Ubah <br>
                                                                     <span class="font-semibold">
                                                                         {{ $row->reg_name }}
                                                                     </span>
@@ -817,10 +828,56 @@ new class extends Component {
 
                                                         </x-dropdown-link>
 
+                                                        {{-- Rekam Medis Perawat --}}
+                                                        <x-dropdown-link href="#"
+                                                            wire:click.prevent="openRekamMedisPerawat('{{ $row->rj_no }}')"
+                                                            class="px-3 py-1.5 text-md">
+                                                            <div class="flex items-start gap-2">
+                                                                <svg class="w-6 h-6 mt-0.5" fill="none"
+                                                                    stroke="currentColor" viewBox="0 0 24 24"
+                                                                    stroke-width="2">
+                                                                    <path stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                    <path stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        d="M19 10l2 2-2 2M5 10l-2 2 2 2" />
+                                                                </svg>
+                                                                <span>
+                                                                    RM Perawat <br>
+                                                                    <span class="font-semibold">Asuhan
+                                                                        Keperawatan</span>
+                                                                </span>
+                                                            </div>
+                                                        </x-dropdown-link>
+
+                                                        {{-- Rekam Medis Dokter --}}
+                                                        <x-dropdown-link href="#"
+                                                            wire:click.prevent="openRekamMedisDokter('{{ $row->rj_no }}')"
+                                                            class="px-3 py-1.5 text-md">
+                                                            <div class="flex items-start gap-2">
+                                                                <svg class="w-6 h-6 mt-0.5" fill="none"
+                                                                    stroke="currentColor" viewBox="0 0 24 24"
+                                                                    stroke-width="2">
+                                                                    <path stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                    <path stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        d="M9 12h6m-6 4h6m2-10v16M7 6h10" />
+                                                                </svg>
+                                                                <span>
+                                                                    RM Dokter <br>
+                                                                    <span class="font-semibold">Asuhan Medis</span>
+                                                                </span>
+                                                            </div>
+                                                        </x-dropdown-link>
+
+                                                        <div class="py-4 space-y-2"></div>
                                                         {{-- Hapus --}}
                                                         <x-dropdown-link href="#"
                                                             wire:click.prevent="requestDelete('{{ $row->rj_no }}')"
-                                                            class="px-3 py-1.5 font-semibold text-md text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50">
+                                                            class="px-3 py-1.5 font-semibold text-md text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 mb-10">
                                                             <div class="flex items-center gap-2">
                                                                 <svg class="w-6 h-6" fill="none"
                                                                     stroke="currentColor" viewBox="0 0 24 24"
@@ -871,6 +928,13 @@ new class extends Component {
 
             {{-- Child actions component (modal CRUD) --}}
             <livewire:pages::transaksi.rj.daftar-rj.daftar-rj-actions />
+
+            {{-- Untuk Perawat --}}
+            <livewire:pages::transaksi.rj.daftar-rj.daftar-rj-actions-rm-perawat />
+
+            {{-- Untuk Dokter --}}
+            <livewire:pages::transaksi.rj.daftar-rj.daftar-rj-actions-rm-dokter />
+
 
 
         </div>

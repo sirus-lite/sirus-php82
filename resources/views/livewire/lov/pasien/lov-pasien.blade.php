@@ -316,8 +316,8 @@ new class extends Component {
                         class="px-4 py-3 text-sm border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800/50 dark:border-gray-700">
                         <div class="flex items-center justify-between">
                             <span
-                                class="font-semibold text-gray-900 dark:text-white">{{ $selected['reg_name'] ?? '' }}</span>
-                            <span class="font-mono text-sm text-brand dark:text-emerald-400">
+                                class="text-lg font-semibold text-gray-900 dark:text-white">{{ $selected['reg_name'] ?? '' }}</span>
+                            <span class="font-mono text-lg text-brand dark:text-emerald-400">
                                 {{ $selected['reg_no'] ?? '' }}
                             </span>
                         </div>
@@ -398,11 +398,11 @@ new class extends Component {
                                 <div class="space-y-2">
                                     {{-- Header: Nama dan No RM --}}
                                     <div class="flex items-center justify-between">
-                                        <div class="font-semibold text-gray-900 dark:text-white">
+                                        <div class="text-lg font-semibold text-gray-900 dark:text-white">
                                             {{ $option['reg_name'] ?? '-' }}
                                         </div>
                                         <div
-                                            class="px-2 py-0.5 text-sm font-mono bg-brand/10 text-brand rounded-full dark:bg-brand/20">
+                                            class="px-2 py-0.5 text-lg font-mono bg-brand/10 text-brand rounded-full dark:bg-brand/20">
                                             {{ $option['reg_no'] ?? '-' }}
                                         </div>
                                     </div>

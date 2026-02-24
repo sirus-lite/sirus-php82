@@ -20,7 +20,6 @@ new class extends Component {
     public bool $isFormLocked = false;
 
     public ?string $rjNo = null;
-    public $disabledPropertyRjStatus = false;
     public ?string $kronisNotice = null;
     public array $dataDaftarPoliRJ = ['passStatus' => 'O'];
     public array $dataPasien = [];
