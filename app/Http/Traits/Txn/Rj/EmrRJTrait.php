@@ -17,8 +17,32 @@ trait EmrRJTrait
     protected function findDataRJ(string $rjNo): array
     {
         // 1. Ambil JSON dari DB
-        $row = DB::table('rstxn_rjhdrs')
-            ->select('datadaftarpolirj_json')
+        $row = DB::table('rsview_rjkasir')
+            ->select([
+                'reg_no',
+                'reg_name',
+                'rj_no',
+                'rj_status',
+                'dr_id',
+                'dr_name',
+                'poli_id',
+                'poli_desc',
+                DB::raw("to_char(rj_date, 'dd/mm/yyyy hh24:mi:ss') as rj_date"),
+                'shift',
+                'klaim_id',
+                'txn_status',
+                'erm_status',
+                'vno_sep',
+                'no_antrian',
+                'no_sep',
+                'nobooking',
+                'waktu_masuk_poli',
+                'waktu_masuk_apt',
+                'waktu_selesai_pelayanan',
+                'kd_dr_bpjs',
+                'kd_poli_bpjs',
+                'datadaftarpolirj_json',
+            ])
             ->where('rj_no', $rjNo)
             ->first();
 
@@ -28,93 +52,20 @@ trait EmrRJTrait
         if ($json && $this->isValidRJJson($json, $rjNo)) {
             $payload = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
             // 1. Coba ambil data lengkap dari view
-            $rjData = DB::table('rsview_rjkasir')
-                ->select([
-                    'reg_no',
-                    'reg_name',
-                    'rj_no',
-                    'rj_status',
-                    'dr_id',
-                    'dr_name',
-                    'poli_id',
-                    'poli_desc',
-                    DB::raw("to_char(rj_date, 'dd/mm/yyyy hh24:mi:ss') as rj_date"),
-                    'shift',
-                    'klaim_id',
-                    'txn_status',
-                    'erm_status',
-                    'vno_sep',
-                    'no_antrian',
-                    'no_sep',
-                    'nobooking',
-                    'waktu_masuk_poli',
-                    'waktu_masuk_apt',
-                    'waktu_selesai_pelayanan',
-                    'kd_dr_bpjs',
-                    'kd_poli_bpjs',
-                ])
-                ->where('rj_no', $rjNo)
-                ->first();
 
-            if ($rjData) {
-                // Mulai dengan template default
-                $dataDaftarRJ = $payload;
+            // Mulai dengan template default
+            $dataDaftarRJ = $payload;
 
-                // ============================================
-                // POPULATE DATA DARI VIEW
-                // ============================================
+            $this->populateFromDatabaseEmrRJ($dataDaftarRJ, $row);
 
-                // Data Pasien
-                $dataDaftarRJ['regNo'] = $rjData->reg_no ?? '';
-                $dataDaftarRJ['regName'] = $rjData->reg_name ?? '';
 
-                // Data Dokter & Poli
-                $dataDaftarRJ['drId'] = $rjData->dr_id ?? '';
-                $dataDaftarRJ['drDesc'] = $rjData->dr_name ?? '';
-                $dataDaftarRJ['poliId'] = $rjData->poli_id ?? '';
-                $dataDaftarRJ['poliDesc'] = $rjData->poli_desc ?? '';
-
-                // Kode BPJS
-                $dataDaftarRJ['kddrbpjs'] = $rjData->kd_dr_bpjs ?? '';
-                $dataDaftarRJ['kdpolibpjs'] = $rjData->kd_poli_bpjs ?? '';
-
-                // Data Klaim
-                $dataDaftarRJ['klaimId'] = $rjData->klaim_id ?? 'UM';
-                $dataDaftarRJ['klaimStatus'] = $this->getKlaimStatus($rjData->klaim_id ?? 'UM');
-
-                // Data Transaksi Dasar
-                $dataDaftarRJ['rjNo'] = $rjData->rj_no ?? $rjNo;
-                $dataDaftarRJ['rjDate'] = $rjData->rj_date ?? '';
-                $dataDaftarRJ['shift'] = $rjData->shift ?? '';
-
-                // Status
-                $dataDaftarRJ['rjStatus'] = $rjData->rj_status ?? 'A';
-                $dataDaftarRJ['txnStatus'] = $rjData->txn_status ?? 'A';
-                $dataDaftarRJ['ermStatus'] = $rjData->erm_status ?? 'A';
-
-                // Nomor-nomor penting
-                $dataDaftarRJ['noAntrian'] = $rjData->no_antrian ?? '';
-                $dataDaftarRJ['noBooking'] = $rjData->nobooking ?? '';
-
-                // Data SEP
-                $dataDaftarRJ['sep']['noSep'] = $rjData->vno_sep ?? $rjData->no_sep ?? '';
-
-                // ============================================
-                // TASK ID Pelayanan
-                // ============================================
-                // Task 3 = rj_date
-                if (!empty($rjData->rj_date)) {
-                    $dataDaftarRJ['taskIdPelayanan']['taskId3'] = $rjData->rj_date;
-                }
-
-                return $dataDaftarRJ;
-            }
-
-            return $payload;
+            return $dataDaftarRJ;
         }
-
+        $builtData = $this->getDefaultPasienTemplate();
         // 3. Jika JSON tidak ada/invalid, coba build dari DB
-        $builtData = $this->buildRJDataFromDatabase($rjNo, $this->getDefaultRJTemplate());
+        if ($row) {
+            $this->populateFromDatabaseEmrRJ($builtData, $row);
+        }
         // 4. Jika build dari DB gagal (return default), kembalikan default
         return $builtData;
     }
@@ -147,101 +98,52 @@ trait EmrRJTrait
     /**
      * Build RJ data from database (only called if JSON is missing)
      */
-    private function buildRJDataFromDatabase(string $rjNo, array $payload): array
+    private function populateFromDatabaseEmrRJ(array &$dataPasien, object $row): void
     {
+        // ============================================
+        // POPULATE DATA DARI VIEW
+        // ============================================
 
-        // 1. Coba ambil data lengkap dari view
-        $rjData = DB::table('rsview_rjkasir')
-            ->select([
-                'reg_no',
-                'reg_name',
-                'rj_no',
-                'rj_status',
-                'dr_id',
-                'dr_name',
-                'poli_id',
-                'poli_desc',
-                DB::raw("to_char(rj_date, 'dd/mm/yyyy hh24:mi:ss') as rj_date"),
-                'shift',
-                'klaim_id',
-                'txn_status',
-                'erm_status',
-                'vno_sep',
-                'no_antrian',
-                'no_sep',
-                'nobooking',
-                'waktu_masuk_poli',
-                'waktu_masuk_apt',
-                'waktu_selesai_pelayanan',
-                'kd_dr_bpjs',
-                'kd_poli_bpjs',
-            ])
-            ->where('rj_no', $rjNo)
-            ->first();
+        // Data Pasien
+        $dataDaftarRJ['regNo'] = $row->reg_no ?? '';
+        $dataDaftarRJ['regName'] = $row->reg_name ?? '';
 
-        if ($rjData) {
-            // Mulai dengan template default
-            $dataDaftarRJ = $payload;
+        // Data Dokter & Poli
+        $dataDaftarRJ['drId'] = $row->dr_id ?? '';
+        $dataDaftarRJ['drDesc'] = $row->dr_name ?? '';
+        $dataDaftarRJ['poliId'] = $row->poli_id ?? '';
+        $dataDaftarRJ['poliDesc'] = $row->poli_desc ?? '';
 
-            // ============================================
-            // POPULATE DATA DARI VIEW
-            // ============================================
+        // Kode BPJS
+        $dataDaftarRJ['kddrbpjs'] = $row->kd_dr_bpjs ?? '';
+        $dataDaftarRJ['kdpolibpjs'] = $row->kd_poli_bpjs ?? '';
 
-            // Data Pasien
-            $dataDaftarRJ['regNo'] = $rjData->reg_no ?? '';
-            $dataDaftarRJ['regName'] = $rjData->reg_name ?? '';
+        // Data Klaim
+        $dataDaftarRJ['klaimId'] = $row->klaim_id ?? 'UM';
+        $dataDaftarRJ['klaimStatus'] = $this->getKlaimStatus($row->klaim_id ?? 'UM');
 
-            // Data Dokter & Poli
-            $dataDaftarRJ['drId'] = $rjData->dr_id ?? '';
-            $dataDaftarRJ['drDesc'] = $rjData->dr_name ?? '';
-            $dataDaftarRJ['poliId'] = $rjData->poli_id ?? '';
-            $dataDaftarRJ['poliDesc'] = $rjData->poli_desc ?? '';
+        // Data Transaksi Dasar
+        $dataDaftarRJ['rjNo'] = $row->rj_no ?? null;
+        $dataDaftarRJ['rjDate'] = $row->rj_date ?? '';
+        $dataDaftarRJ['shift'] = $row->shift ?? '';
 
-            // Kode BPJS
-            $dataDaftarRJ['kddrbpjs'] = $rjData->kd_dr_bpjs ?? '';
-            $dataDaftarRJ['kdpolibpjs'] = $rjData->kd_poli_bpjs ?? '';
+        // Status
+        $dataDaftarRJ['rjStatus'] = $row->rj_status ?? 'A';
+        $dataDaftarRJ['txnStatus'] = $row->txn_status ?? 'A';
+        $dataDaftarRJ['ermStatus'] = $row->erm_status ?? 'A';
 
-            // Data Klaim
-            $dataDaftarRJ['klaimId'] = $rjData->klaim_id ?? 'UM';
-            $dataDaftarRJ['klaimStatus'] = $this->getKlaimStatus($rjData->klaim_id ?? 'UM');
+        // Nomor-nomor penting
+        $dataDaftarRJ['noAntrian'] = $row->no_antrian ?? '';
+        $dataDaftarRJ['noBooking'] = $row->nobooking ?? '';
 
-            // Data Transaksi Dasar
-            $dataDaftarRJ['rjNo'] = $rjData->rj_no ?? $rjNo;
-            $dataDaftarRJ['rjDate'] = $rjData->rj_date ?? '';
-            $dataDaftarRJ['shift'] = $rjData->shift ?? '';
-
-            // Status
-            $dataDaftarRJ['rjStatus'] = $rjData->rj_status ?? 'A';
-            $dataDaftarRJ['txnStatus'] = $rjData->txn_status ?? 'A';
-            $dataDaftarRJ['ermStatus'] = $rjData->erm_status ?? 'A';
-
-            // Nomor-nomor penting
-            $dataDaftarRJ['noAntrian'] = $rjData->no_antrian ?? '';
-            $dataDaftarRJ['noBooking'] = $rjData->nobooking ?? '';
-
-            // Data SEP
-            $dataDaftarRJ['sep']['noSep'] = $rjData->vno_sep ?? $rjData->no_sep ?? '';
-
-            // ============================================
-            // TASK ID Pelayanan
-            // ============================================
-            // Task 3 = rj_date
-            if (!empty($rjData->rj_date)) {
-                $dataDaftarRJ['taskIdPelayanan']['taskId3'] = $rjData->rj_date;
-            }
-
-            return $dataDaftarRJ;
-        }
+        // Data SEP
+        $dataDaftarRJ['sep']['noSep'] = $row->vno_sep ?? $row->no_sep ?? '';
 
         // ============================================
-        // FALLBACK: Jika data benar-benar tidak ditemukan
+        // TASK ID Pelayanan
         // ============================================
-        $dataDaftarRJ = $payload;
-        $dataDaftarRJ['rjNo'] = $rjNo;
-        $dataDaftarRJ['regName'] = 'DATA TIDAK DITEMUKAN';
-
-
-        return $dataDaftarRJ;
+        // Task 3 = rj_date
+        $dataDaftarRJ['taskIdPelayanan']['taskId3'] = $row->rj_date ?? $dataDaftarRJ['taskIdPelayanan']['taskId3'] ?? '';
     }
 
     /**

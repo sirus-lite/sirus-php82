@@ -15,50 +15,16 @@ trait MasterPasienTrait
      */
     protected function findDataMasterPasien(string $regNo): array
     {
-
-        try {
-            // 1. Check if JSON exists (cache-first pattern)
-            $row = DB::table('rsmst_pasiens')
-                ->select('meta_data_pasien_json')
-                ->where('reg_no', $regNo)
-                ->first();
-
-            if (!$row) {
-                return $this->buildDefaultData($regNo, "Pasien tidak ditemukan untuk reg_no: {$regNo}");
-            }
-
-            $json = $row->meta_data_pasien_json ?? null;
-
-            // 2. If JSON exists & valid, return immediately
-            if ($json && $this->isValidJson($json, $regNo)) {
-                return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-            }
-
-            // 3. If JSON doesn't exist/invalid, build from database
-            return $this->buildDataFromDatabase($regNo);
-        } catch (Throwable $e) {
-            return $this->buildDefaultData($regNo, $e->getMessage());
-        }
-    }
-
-    /**
-     * Build data from database (only called if JSON is missing)
-     */
-    private function buildDataFromDatabase(string $regNo): array
-    {
-        // Start with default template
-        $dataPasien = $this->getDefaultPasienTemplate();
-        $dataPasien['pasien']['regNo'] = $regNo;
-
-        // Query from database with JOINs
-        $findData = DB::table('rsmst_pasiens')
-            ->select(
-                DB::raw("to_char(reg_date,'dd/mm/yyyy hh24:mi:ss') as reg_date"),
-                DB::raw("to_char(reg_date,'yyyymmddhh24miss') as reg_date1"),
+        // 1. Ambil JSON dari DB
+        $row = DB::table('rsmst_pasiens')
+            ->select([
                 'reg_no',
                 'reg_name',
-                DB::raw("nvl(nokartu_bpjs,'-') as nokartu_bpjs"),
-                DB::raw("nvl(nik_bpjs,'-') as nik_bpjs"),
+                'meta_data_pasien_json',
+                DB::raw("to_char(reg_date,'dd/mm/yyyy hh24:mi:ss') as reg_date"),
+                DB::raw("to_char(reg_date,'yyyymmddhh24miss') as reg_date1"),
+                'nokartu_bpjs',
+                'nik_bpjs',
                 'sex',
                 DB::raw("to_char(birth_date,'dd/mm/yyyy') as birth_date"),
                 DB::raw("(select trunc( months_between( sysdate, birth_date ) /12 ) from dual) as thn"),
@@ -88,7 +54,7 @@ trait MasterPasienTrait
                 'rsmst_propinsis.prop_id as prop_id',
                 'prop_name',
                 'phone'
-            )
+            ])
             ->join('rsmst_religions', 'rsmst_religions.rel_id', '=', 'rsmst_pasiens.rel_id')
             ->join('rsmst_educations', 'rsmst_educations.edu_id', '=', 'rsmst_pasiens.edu_id')
             ->join('rsmst_jobs', 'rsmst_jobs.job_id', '=', 'rsmst_pasiens.job_id')
@@ -99,84 +65,32 @@ trait MasterPasienTrait
             ->where('reg_no', $regNo)
             ->first();
 
-        if (!$findData) {
-            return $this->buildDefaultData($regNo, "Data detail pasien tidak ditemukan di database");
+        $json = $row->meta_data_pasien_json ?? null;
+
+        // 2. Jika JSON valid, langsung return
+        if ($json && $this->isValidMasterPasienJson($json, $regNo)) {
+            $dataPasien = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+
+            // Update dengan data terkini dari database
+            $this->populateFromDatabaseMasterPasien($dataPasien, $row);
+
+            return $dataPasien;
         }
 
-        // Populate data from database
-        $this->populateFromDatabase($dataPasien, $findData);
+        // 3. Jika JSON tidak ada/invalid, build dari DB
+        $builtData = $this->getDefaultPasienTemplate();
 
-        // Auto-save to JSON for next requests
-        $this->autoSaveToJson($regNo, $dataPasien);
-
-        return $dataPasien;
+        if ($row) {
+            $this->populateFromDatabaseMasterPasien($builtData, $row);
+        }
+        // 4. Jika build dari DB gagal (return default), kembalikan default
+        return $builtData;
     }
 
     /**
-     * Populate data from database query result
+     * Validate Master Pasien JSON structure and reg_no
      */
-    private function populateFromDatabase(array &$dataPasien, object $findData): void
-    {
-        // Basic patient info
-        $dataPasien['pasien']['regDate'] = $findData->reg_date ?? '';
-        $dataPasien['pasien']['regName'] = $findData->reg_name ?? '';
-
-        // Identity information
-        $dataPasien['pasien']['identitas']['idbpjs'] = $findData->nokartu_bpjs ?? '-';
-        $dataPasien['pasien']['identitas']['nik'] = $findData->nik_bpjs ?? '-';
-        $dataPasien['pasien']['identitas']['alamat'] = $findData->address ?? '';
-
-        $dataPasien['pasien']['identitas']['desaId'] = $findData->des_id ?? '';
-        $dataPasien['pasien']['identitas']['desaName'] = $findData->des_name ?? '';
-        $dataPasien['pasien']['identitas']['rt'] = $findData->rt ?? '';
-        $dataPasien['pasien']['identitas']['rw'] = $findData->rw ?? '';
-
-        $dataPasien['pasien']['identitas']['kecamatanId'] = $findData->kec_id ?? '';
-        $dataPasien['pasien']['identitas']['kecamatanName'] = $findData->kec_name ?? '';
-
-        $dataPasien['pasien']['identitas']['kotaId'] = $findData->kab_id ?? '';
-        $dataPasien['pasien']['identitas']['kotaName'] = $findData->kab_name ?? '';
-
-        $dataPasien['pasien']['identitas']['propinsiId'] = $findData->prop_id ?? '';
-        $dataPasien['pasien']['identitas']['propinsiName'] = $findData->prop_name ?? '';
-
-        // Gender
-        $isMale = (($findData->sex ?? '') === 'L');
-        $dataPasien['pasien']['jenisKelamin']['jenisKelaminId'] = $isMale ? 1 : 2;
-        $dataPasien['pasien']['jenisKelamin']['jenisKelaminDesc'] = $isMale ? 'Laki-laki' : 'Perempuan';
-
-        // Birth data
-        $dataPasien['pasien']['tglLahir'] = $findData->birth_date ?? '';
-        $dataPasien['pasien']['thn'] = $findData->thn ?? '';
-        $dataPasien['pasien']['bln'] = $findData->bln ?? '';
-        $dataPasien['pasien']['hari'] = $findData->hari ?? '';
-        $dataPasien['pasien']['tempatLahir'] = $findData->birth_place ?? '';
-
-        // Religion, education, occupation
-        $dataPasien['pasien']['agama']['agamaId'] = $findData->rel_id ?? '1';
-        $dataPasien['pasien']['agama']['agamaDesc'] = $findData->rel_desc ?? 'Islam';
-
-        $dataPasien['pasien']['pendidikan']['pendidikanId'] = $findData->edu_id ?? '3';
-        $dataPasien['pasien']['pendidikan']['pendidikanDesc'] = $findData->edu_desc ?? 'SLTA Sederajat';
-
-        $dataPasien['pasien']['pekerjaan']['pekerjaanId'] = $findData->job_id ?? '4';
-        $dataPasien['pasien']['pekerjaan']['pekerjaanDesc'] = $findData->job_name ?? 'Pegawai Swasta/ Wiraswasta';
-
-        // Contact
-        $dataPasien['pasien']['kontak']['nomerTelponSelulerPasien'] = $findData->phone ?? '';
-
-        // Family relations
-        $dataPasien['pasien']['hubungan']['namaPenanggungJawab'] = $findData->kk ?? '';
-        $dataPasien['pasien']['hubungan']['namaIbu'] = $findData->nyonya ?? '';
-
-        // Map additional fields if they exist
-        $this->mapAdditionalFields($dataPasien, $findData);
-    }
-
-    /**
-     * Validate JSON structure and reg_no
-     */
-    private function isValidJson(?string $json, string $expectedRegNo): bool
+    private function isValidMasterPasienJson(?string $json, string $expectedRegNo): bool
     {
         if (!$json || trim($json) === '') {
             return false;
@@ -199,44 +113,67 @@ trait MasterPasienTrait
     }
 
     /**
-     * Auto-save to JSON (optimization for next requests)
+     * Populate data from database query result
      */
-    private function autoSaveToJson(string $regNo, array $data): void
+    private function populateFromDatabaseMasterPasien(array &$dataPasien, object $row): void
     {
-        try {
-            DB::table('rsmst_pasiens')
-                ->where('reg_no', $regNo)
-                ->update([
-                    'meta_data_pasien_json' => json_encode(
-                        $data,
-                        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
-                    ),
-                ]);
-        } catch (Throwable $e) {
-            // Silent fail - auto-save is not critical
-        }
+        // Basic patient info
+        $dataPasien['pasien']['regNo'] = $row->reg_no ?? '';
+        $dataPasien['pasien']['regName'] = $row->reg_name ?? '';
+        $dataPasien['pasien']['regDate'] = $row->reg_date ?? '';
+
+        // Identity information
+        $dataPasien['pasien']['identitas']['idbpjs'] = $row->nokartu_bpjs ?? '-';
+        $dataPasien['pasien']['identitas']['nik'] = $row->nik_bpjs ?? '-';
+        $dataPasien['pasien']['identitas']['alamat'] = $row->address ?? '';
+
+        $dataPasien['pasien']['identitas']['desaId'] = $row->des_id ?? '';
+        $dataPasien['pasien']['identitas']['desaName'] = $row->des_name ?? '';
+        $dataPasien['pasien']['identitas']['rt'] = $row->rt ?? '';
+        $dataPasien['pasien']['identitas']['rw'] = $row->rw ?? '';
+
+        $dataPasien['pasien']['identitas']['kecamatanId'] = $row->kec_id ?? '';
+        $dataPasien['pasien']['identitas']['kecamatanName'] = $row->kec_name ?? '';
+
+        $dataPasien['pasien']['identitas']['kotaId'] = $row->kab_id ?? '';
+        $dataPasien['pasien']['identitas']['kotaName'] = $row->kab_name ?? '';
+
+        $dataPasien['pasien']['identitas']['propinsiId'] = $row->prop_id ?? '';
+        $dataPasien['pasien']['identitas']['propinsiName'] = $row->prop_name ?? '';
+
+        // Gender
+        $isMale = (($row->sex ?? '') === 'L');
+        $dataPasien['pasien']['jenisKelamin']['jenisKelaminId'] = $isMale ? 1 : 2;
+        $dataPasien['pasien']['jenisKelamin']['jenisKelaminDesc'] = $isMale ? 'Laki-laki' : 'Perempuan';
+
+        // Birth data
+        $dataPasien['pasien']['tglLahir'] = $row->birth_date ?? '';
+        $dataPasien['pasien']['thn'] = $row->thn ?? '';
+        $dataPasien['pasien']['bln'] = $row->bln ?? '';
+        $dataPasien['pasien']['hari'] = $row->hari ?? '';
+        $dataPasien['pasien']['tempatLahir'] = $row->birth_place ?? '';
+
+        // Religion, education, occupation
+        $dataPasien['pasien']['agama']['agamaId'] = $row->rel_id ?? '1';
+        $dataPasien['pasien']['agama']['agamaDesc'] = $row->rel_desc ?? 'Islam';
+
+        $dataPasien['pasien']['pendidikan']['pendidikanId'] = $row->edu_id ?? '3';
+        $dataPasien['pasien']['pendidikan']['pendidikanDesc'] = $row->edu_desc ?? 'SLTA Sederajat';
+
+        $dataPasien['pasien']['pekerjaan']['pekerjaanId'] = $row->job_id ?? '4';
+        $dataPasien['pasien']['pekerjaan']['pekerjaanDesc'] = $row->job_name ?? 'Pegawai Swasta/ Wiraswasta';
+
+        // Contact
+        $dataPasien['pasien']['kontak']['nomerTelponSelulerPasien'] = $row->phone ?? '';
+
+        // Family relations
+        $dataPasien['pasien']['hubungan']['namaPenanggungJawab'] = $row->kk ?? '';
+        $dataPasien['pasien']['hubungan']['namaIbu'] = $row->nyonya ?? '';
+
+        // Map additional fields if they exist
+        $this->mapAdditionalFields($dataPasien, $row);
     }
 
-    /**
-     * Build default data with error message
-     */
-    private function buildDefaultData(string $regNo, string $errorMessage = ''): array
-    {
-        $dataPasien = $this->getDefaultPasienTemplate();
-        $dataPasien['pasien']['regNo'] = $regNo;
-        $dataPasien['pasien']['regName'] = 'DATA TIDAK DITEMUKAN';
-        $dataPasien['pasien']['regDate'] = date('d/m/Y H:i:s');
-
-        if ($errorMessage) {
-            $dataPasien['metadata'] = [
-                'error' => $errorMessage,
-                'source' => 'default_template',
-                'timestamp' => date('c')
-            ];
-        }
-
-        return $dataPasien;
-    }
 
     /**
      * Get default patient template
@@ -421,10 +358,10 @@ trait MasterPasienTrait
     /**
      * Map additional fields (blood type, marital status)
      */
-    private function mapAdditionalFields(array &$dataPasien, object $findData): void
+    private function mapAdditionalFields(array &$dataPasien, object $row): void
     {
         // Map blood type if exists
-        if (isset($findData->blood) && $findData->blood) {
+        if (isset($row->blood) && $row->blood) {
             $bloodMap = [
                 'A' => 1,
                 'B' => 2,
@@ -442,14 +379,14 @@ trait MasterPasienTrait
                 '#' => 15
             ];
 
-            if (isset($bloodMap[$findData->blood])) {
-                $dataPasien['pasien']['golonganDarah']['golonganDarahId'] = (string)$bloodMap[$findData->blood];
-                $dataPasien['pasien']['golonganDarah']['golonganDarahDesc'] = $findData->blood;
+            if (isset($bloodMap[$row->blood])) {
+                $dataPasien['pasien']['golonganDarah']['golonganDarahId'] = (string)$bloodMap[$row->blood];
+                $dataPasien['pasien']['golonganDarah']['golonganDarahDesc'] = $row->blood;
             }
         }
 
         // Map marital status if exists
-        if (isset($findData->marital_status) && $findData->marital_status) {
+        if (isset($row->marital_status) && $row->marital_status) {
             $maritalMap = [
                 'S' => 1, // Single/Belum Kawin
                 'M' => 2, // Married/Kawin
@@ -457,10 +394,10 @@ trait MasterPasienTrait
                 'W' => 4, // Widowed/Cerai Mati
             ];
 
-            if (isset($maritalMap[$findData->marital_status])) {
-                $dataPasien['pasien']['statusPerkawinan']['statusPerkawinanId'] = (string)$maritalMap[$findData->marital_status];
+            if (isset($maritalMap[$row->marital_status])) {
+                $dataPasien['pasien']['statusPerkawinan']['statusPerkawinanId'] = (string)$maritalMap[$row->marital_status];
                 $dataPasien['pasien']['statusPerkawinan']['statusPerkawinanDesc'] =
-                    $this->getMaritalDescription($maritalMap[$findData->marital_status]);
+                    $this->getMaritalDescription($maritalMap[$row->marital_status]);
             }
         }
     }
@@ -483,63 +420,18 @@ trait MasterPasienTrait
     public static function updateJsonMasterPasien(string $regNo, array $payload): void
     {
         DB::transaction(function () use ($regNo, $payload) {
-            // Validate payload has correct regNo
             if (!isset($payload['pasien']['regNo']) || $payload['pasien']['regNo'] !== $regNo) {
                 throw new \RuntimeException("regNo dalam payload tidak sesuai dengan parameter");
             }
 
-            $json = json_encode(
-                $payload,
-                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
-            );
-
             DB::table('rsmst_pasiens')
                 ->where('reg_no', $regNo)
                 ->update([
-                    'meta_data_pasien_json' => $json,
+                    'meta_data_pasien_json' => json_encode(
+                        $payload,
+                        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
+                    )
                 ]);
         }, 3);
-    }
-
-    /**
-     * Check if patient has JSON data
-     */
-    protected function checkMasterPasienStatus(string $regNo): bool
-    {
-        return DB::table('rsmst_pasiens')
-            ->where('reg_no', $regNo)
-            ->whereNotNull('meta_data_pasien_json')
-            ->exists();
-    }
-
-    /**
-     * Enhanced method with strict validation
-     */
-    protected function findDataMasterPasienStrict(string $regNo): array
-    {
-        // Validate reg_no format
-        if (empty($regNo) || !$this->validateRegNo($regNo)) {
-            return $this->buildDefaultData($regNo, "Format reg_no tidak valid");
-        }
-
-        $data = $this->findDataMasterPasien($regNo);
-
-        // Additional validation for returned data
-        if (isset($data['pasien']['regNo']) && $data['pasien']['regNo'] !== $regNo) {
-            // Force correction
-            $data['pasien']['regNo'] = $regNo;
-            $data['metadata']['corrected_regNo'] = true;
-        }
-
-        return $data;
-    }
-
-    /**
-     * Validate reg_no format
-     */
-    private function validateRegNo(string $regNo): bool
-    {
-        // Basic validation - adjust as needed
-        return !empty($regNo) && strlen($regNo) <= 50;
     }
 }
