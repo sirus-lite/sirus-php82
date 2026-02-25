@@ -17,7 +17,7 @@ new class extends Component {
 
     /* -------------------------
      | Update Search Keyword
-     * Fungsi: Reset halaman saat keyword berubah
+         * Fungsi: Reset halaman saat keyword berubah
      * ------------------------- */
     public function updatedSearchKeyword(): void
     {
@@ -26,7 +26,7 @@ new class extends Component {
 
     /* -------------------------
      | Update Items Per Page
-     * Fungsi: Reset halaman saat jumlah item per halaman berubah
+         * Fungsi: Reset halaman saat jumlah item per halaman berubah
      * ------------------------- */
     public function updatedItemsPerPage(): void
     {
@@ -35,7 +35,7 @@ new class extends Component {
 
     /* -------------------------
      | Open Create Modal
-     * Fungsi: Trigger modal create di child component
+         * Fungsi: Trigger modal create di child component
      * ------------------------- */
     public function openCreate(): void
     {
@@ -44,7 +44,7 @@ new class extends Component {
 
     /* -------------------------
      | Open Edit Modal
-     * Fungsi: Trigger modal edit di child component
+         * Fungsi: Trigger modal edit di child component
      * ------------------------- */
     public function openEdit(string $productId): void
     {
@@ -53,16 +53,16 @@ new class extends Component {
 
     /* -------------------------
      | Request Delete
-     * Fungsi: Delegate proses delete ke child component (actions)
+         * Fungsi: Delegate proses delete ke child component (actions)
      * ------------------------- */
     public function requestDelete(string $productId): void
     {
         $this->dispatch('master.obat.requestDelete', productId: $productId);
     }
-    
+
     /* -------------------------
      | Refresh After Saved
-     * Fungsi: Refresh grid setelah data disimpan dari child component
+         * Fungsi: Refresh grid setelah data disimpan dari child component
      * ------------------------- */
     #[On('master.obat.saved')]
     public function refreshAfterSaved(): void
@@ -73,7 +73,7 @@ new class extends Component {
 
     /* -------------------------
      | Base Query
-     * Fungsi: Query builder dasar dengan filter search
+         * Fungsi: Query builder dasar dengan filter search
      * ------------------------- */
     #[Computed]
     public function baseQuery()
@@ -97,12 +97,12 @@ new class extends Component {
                 'p.cost_price',
                 'p.sales_price',
                 'p.stock',
-                                
+
                 // Nama dari tabel relasi (untuk display)
                 'u.uom_desc as uom_name',
                 'c.cat_desc as cat_name',
                 'g.grp_name',
-                's.supp_name'
+                's.supp_name',
             )
             ->orderBy('p.product_name', 'asc');
 
@@ -132,7 +132,7 @@ new class extends Component {
 
     /* -------------------------
      | Rows (Paginated Data)
-     * Fungsi: Data obat dengan pagination
+         * Fungsi: Data obat dengan pagination
      * ------------------------- */
     #[Computed]
     public function rows()
@@ -261,54 +261,56 @@ new class extends Component {
                         {{-- TABLE BODY --}}
                         <tbody class="text-gray-700 divide-y divide-gray-200 dark:divide-gray-700 dark:text-gray-200">
                             @forelse($this->rows as $row)
-                            <tr wire:key="obat-row-{{ $row->product_id }}"
-                                class="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                                <tr wire:key="obat-row-{{ $row->product_id }}"
+                                    class="hover:bg-gray-50 dark:hover:bg-gray-800/60">
 
-                                <td class="px-4 py-3">
-                                    {{ ($this->rows->currentPage() - 1) * $this->rows->perPage() + $loop->iteration }}
-                                </td>
+                                    <td class="px-4 py-3">
+                                        {{ ($this->rows->currentPage() - 1) * $this->rows->perPage() + $loop->iteration }}
+                                    </td>
 
-                                <td class="px-4 py-3 font-mono text-sm">{{ $row->product_id }}</td>
-                                <td class="px-4 py-3 font-semibold">{{ $row->product_name }}</td>
-                                <td class="px-4 py-3">{{ $row->kode }}</td>
-                                <td class="px-4 py-3">{{ $row->uom_name ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $row->cat_name ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $row->grp_name ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $row->supp_name ?? '-' }}</td>
-                                <td class="px-4 py-3 text-right">Rp {{ number_format($row->cost_price ?? 0, 0, ',', '.')
-                                    }}</td>
-                                <td class="px-4 py-3 text-right">Rp {{ number_format($row->sales_price ?? 0, 0, ',',
-                                    '.') }}</td>
-                                <td class="px-4 py-3 font-semibold text-center">{{ $row->stock ?? 0 }}</td>
+                                    <td class="px-4 py-3 font-mono text-sm">{{ $row->product_id }}</td>
+                                    <td class="px-4 py-3 font-semibold">{{ $row->product_name }}</td>
+                                    <td class="px-4 py-3">{{ $row->kode }}</td>
+                                    <td class="px-4 py-3">{{ $row->uom_name ?? '-' }}</td>
+                                    <td class="px-4 py-3">{{ $row->cat_name ?? '-' }}</td>
+                                    <td class="px-4 py-3">{{ $row->grp_name ?? '-' }}</td>
+                                    <td class="px-4 py-3">{{ $row->supp_name ?? '-' }}</td>
+                                    <td class="px-4 py-3 text-right">Rp
+                                        {{ number_format($row->cost_price ?? 0, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-3 text-right">Rp
+                                        {{ number_format($row->sales_price ?? 0, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-4 py-3 font-semibold text-center">{{ $row->stock ?? 0 }}</td>
 
-                                <td class="px-4 py-3">
-                                    <div class="flex gap-2">
-                                        <x-outline-button type="button" wire:click="openEdit('{{ $row->product_id }}')"
-                                            class="px-2 py-1 text-xs whitespace-nowrap">
-                                            Edit
-                                        </x-outline-button>
-                                        <x-confirm-button variant="danger" size="xs"
-                                            :action="'requestDelete(\'' . $row->product_id . '\')'" title="Hapus Obat"
-                                            message="Yakin hapus data obat {{ $row->product_name }}?"
-                                            confirmText="Ya, hapus" cancelText="Batal" class="whitespace-nowrap">
-                                            Hapus
-                                        </x-confirm-button>
-                                    </div>
-                                </td>
-                            </tr>
+                                    <td class="px-4 py-3">
+                                        <div class="flex gap-2">
+                                            <x-outline-button type="button"
+                                                wire:click="openEdit('{{ $row->product_id }}')"
+                                                class="px-2 py-1 text-xs whitespace-nowrap">
+                                                Edit
+                                            </x-outline-button>
+                                            <x-confirm-button variant="danger" size="xs" :action="'requestDelete(\'' . $row->product_id . '\')'"
+                                                title="Hapus Obat"
+                                                message="Yakin hapus data obat {{ $row->product_name }}?"
+                                                confirmText="Ya, hapus" cancelText="Batal" class="whitespace-nowrap">
+                                                Hapus
+                                            </x-confirm-button>
+                                        </div>
+                                    </td>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="12" class="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
-                                    <div class="flex flex-col items-center justify-center gap-2">
-                                        <svg class="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        <span>Data obat belum ada.</span>
-                                    </div>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td colspan="12" class="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                                        <div class="flex flex-col items-center justify-center gap-2">
+                                            <svg class="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <span>Data obat belum ada.</span>
+                                        </div>
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -323,7 +325,7 @@ new class extends Component {
         </div>
 
         {{-- Child actions component (modal CRUD) --}}
-        <livewire:pages::master.master-obat.master-obat-actions />
+        <livewire:pages::master.master-obat.master-obat-actions wire:key="master-obat-actions" />
     </div>
 </div>
 </div>

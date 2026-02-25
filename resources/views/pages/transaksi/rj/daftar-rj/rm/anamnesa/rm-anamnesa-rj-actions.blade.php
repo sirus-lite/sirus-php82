@@ -21,16 +21,18 @@ new class extends Component {
     /* ===============================
      | OPEN REKAM MEDIS PERAWAT - ANAMNESA
      =============================== */
-    public function openAnamnesa(int $rjNo = null): void
+    #[On('open-rm-anamnesa-rj')]
+    public function openAnamnesa($rjNo): void
     {
         if (empty($rjNo)) {
             return;
         }
 
+        $this->$rjNo = $rjNo;
+
         $this->resetForm();
         $this->resetValidation();
         // Ambil data kunjungan RJ
-        $this->rjNo = $rjNo;
         $dataDaftarPoliRJ = $this->findDataRJ($rjNo);
 
         if (!$dataDaftarPoliRJ) {
@@ -397,12 +399,10 @@ new class extends Component {
         $this->incrementVersion('modal-anamnesa-rj');
 
         $this->dispatch('toast', type: 'success', message: $message);
-        $this->dispatch('refresh-after-rj.saved');
     }
 
     protected function resetForm(): void
     {
-        $this->reset(['rjNo', 'dataDaftarPoliRJ']);
         $this->resetVersion();
         $this->isFormLocked = false;
     }
@@ -410,7 +410,6 @@ new class extends Component {
     public function mount()
     {
         $this->registerAreas(['modal-anamnesa-rj']);
-        $this->openAnamnesa($this->rjNo);
     }
 };
 

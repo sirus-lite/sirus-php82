@@ -63,9 +63,7 @@ new class extends Component {
     {
         $searchKeyword = trim($this->searchKeyword);
 
-        $queryBuilder = DB::table('rsmst_others')
-            ->select('other_id', 'other_desc', 'other_price', 'active_status')
-            ->orderBy('other_desc', 'asc');
+        $queryBuilder = DB::table('rsmst_others')->select('other_id', 'other_desc', 'other_price', 'active_status')->orderBy('other_desc', 'asc');
 
         if ($searchKeyword !== '') {
             $uppercaseKeyword = mb_strtoupper($searchKeyword);
@@ -75,9 +73,7 @@ new class extends Component {
                     $subQuery->orWhere('other_id', $searchKeyword);
                 }
 
-                $subQuery
-                    ->orWhereRaw('UPPER(other_desc) LIKE ?', ["%{$uppercaseKeyword}%"])
-                    ->orWhereRaw('UPPER(other_price) LIKE ?', ["%{$uppercaseKeyword}%"]);
+                $subQuery->orWhereRaw('UPPER(other_desc) LIKE ?', ["%{$uppercaseKeyword}%"])->orWhereRaw('UPPER(other_price) LIKE ?', ["%{$uppercaseKeyword}%"]);
             });
         }
 
@@ -168,41 +164,41 @@ new class extends Component {
 
                         <tbody class="text-gray-700 divide-y divide-gray-200 dark:divide-gray-700 dark:text-gray-200">
                             @forelse($this->rows as $row)
-                            <tr wire:key="others-row-{{ $row->other_id }}"
-                                class="hover:bg-gray-50 dark:hover:bg-gray-800/60">
-                                <td class="px-4 py-3">{{ $row->other_id }}</td>
-                                <td class="px-4 py-3 font-semibold">{{ $row->other_desc }}</td>
-                                <td class="px-4 py-3">
-                                    <span class="font-mono text-gray-600 dark:text-green-400">
-                                        {{ $this->formatRupiah($row->other_price) }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <x-badge :variant="(string) $row->active_status === '1' ? 'success' : 'danger'">
-                                        {{ (string) $row->active_status === '1' ? 'Aktif' : 'Tidak Aktif' }}
-                                    </x-badge>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-wrap gap-2">
-                                        <x-outline-button type="button" wire:click="openEdit('{{ $row->other_id }}')">
-                                            Edit
-                                        </x-outline-button>
+                                <tr wire:key="others-row-{{ $row->other_id }}"
+                                    class="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                                    <td class="px-4 py-3">{{ $row->other_id }}</td>
+                                    <td class="px-4 py-3 font-semibold">{{ $row->other_desc }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="font-mono text-gray-600 dark:text-green-400">
+                                            {{ $this->formatRupiah($row->other_price) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <x-badge :variant="(string) $row->active_status === '1' ? 'success' : 'danger'">
+                                            {{ (string) $row->active_status === '1' ? 'Aktif' : 'Tidak Aktif' }}
+                                        </x-badge>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-wrap gap-2">
+                                            <x-outline-button type="button"
+                                                wire:click="openEdit('{{ $row->other_id }}')">
+                                                Edit
+                                            </x-outline-button>
 
-                                        <x-confirm-button variant="danger"
-                                            :action="'requestDelete(\'' . $row->other_id . '\')'" title="Hapus Data"
-                                            message="Yakin hapus data {{ $row->other_desc }}?" confirmText="Ya, hapus"
-                                            cancelText="Batal">
-                                            Hapus
-                                        </x-confirm-button>
-                                    </div>
-                                </td>
-                            </tr>
+                                            <x-confirm-button variant="danger" :action="'requestDelete(\'' . $row->other_id . '\')'" title="Hapus Data"
+                                                message="Yakin hapus data {{ $row->other_desc }}?"
+                                                confirmText="Ya, hapus" cancelText="Batal">
+                                                Hapus
+                                            </x-confirm-button>
+                                        </div>
+                                    </td>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="5" class="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
-                                    Data belum ada.
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td colspan="5" class="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                                        Data belum ada.
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -216,7 +212,7 @@ new class extends Component {
             </div>
 
             {{-- Child actions component --}}
-            <livewire:pages::master.master-others.master-others-actions />
+            <livewire:pages::master.master-others.master-others-actions wire:key="master-others-actions" />
         </div>
     </div>
 </div>

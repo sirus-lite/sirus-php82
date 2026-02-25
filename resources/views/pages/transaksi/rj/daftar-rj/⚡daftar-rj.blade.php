@@ -795,12 +795,12 @@ new class extends Component {
                                                                 {{-- Tombol TaskId4 Selesai Pelayanan --}}
                                                                 <livewire:pages::transaksi.rj.task-id-pelayanan.task-id-4
                                                                     :rjNo="$row->rj_no"
-                                                                    :wire:key="'taskid4-'.$row->rj_no" />
+                                                                    :wire:key="'taskid4--'.$row->rj_no" />
 
                                                                 {{-- Tombol TaskId5 Panggil Antrian --}}
                                                                 <livewire:pages::transaksi.rj.task-id-pelayanan.task-id-5
                                                                     :rjNo="$row->rj_no"
-                                                                    :wire:key="'taskid5-'.$row->rj_no" />
+                                                                    :wire:key="'taskid5--'.$row->rj_no" />
                                                         @endif
 
 
@@ -927,10 +927,11 @@ new class extends Component {
             </div>
 
             {{-- Child actions component (modal CRUD) --}}
-            <livewire:pages::transaksi.rj.daftar-rj.daftar-rj-actions />
+            <livewire:pages::transaksi.rj.daftar-rj.daftar-rj-actions wire:key="daftar-rj-actions" />
 
             {{-- Untuk Perawat --}}
-            <livewire:pages::transaksi.rj.daftar-rj.daftar-rj-actions-rm-perawat />
+            <livewire:pages::transaksi.rj.daftar-rj.daftar-rj-actions-rm-perawat
+                wire:key="daftar-rj-actions-perawat" />
 
 
         </div>

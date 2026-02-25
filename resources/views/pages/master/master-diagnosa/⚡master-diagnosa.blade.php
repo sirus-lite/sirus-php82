@@ -63,9 +63,7 @@ new class extends Component {
     {
         $searchKeyword = trim($this->searchKeyword);
 
-        $queryBuilder = DB::table('rsmst_mstdiags')
-            ->select('diag_id', 'diag_desc', 'icdx')
-            ->orderBy('diag_desc', 'asc');
+        $queryBuilder = DB::table('rsmst_mstdiags')->select('diag_id', 'diag_desc', 'icdx')->orderBy('diag_desc', 'asc');
 
         if ($searchKeyword !== '') {
             $uppercaseKeyword = mb_strtoupper($searchKeyword);
@@ -75,9 +73,7 @@ new class extends Component {
                     $subQuery->orWhere('diag_id', $searchKeyword);
                 }
 
-                $subQuery
-                    ->orWhereRaw('UPPER(diag_desc) LIKE ?', ["%{$uppercaseKeyword}%"])
-                    ->orWhereRaw('UPPER(icdx) LIKE ?', ["%{$uppercaseKeyword}%"]);
+                $subQuery->orWhereRaw('UPPER(diag_desc) LIKE ?', ["%{$uppercaseKeyword}%"])->orWhereRaw('UPPER(icdx) LIKE ?', ["%{$uppercaseKeyword}%"]);
             });
         }
 
@@ -161,36 +157,36 @@ new class extends Component {
 
                         <tbody class="text-gray-700 divide-y divide-gray-200 dark:divide-gray-700 dark:text-gray-200">
                             @forelse($this->rows as $row)
-                            <tr wire:key="diagnosa-row-{{ $row->diag_id }}"
-                                class="hover:bg-gray-50 dark:hover:bg-gray-800/60">
-                                <td class="px-4 py-3">{{ $row->diag_id }}</td>
-                                <td class="px-4 py-3">
-                                    <x-badge variant="info" class="font-mono">
-                                        {{ $row->icdx }}
-                                    </x-badge>
-                                </td>
-                                <td class="px-4 py-3 font-semibold">{{ $row->diag_desc }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-wrap gap-2">
-                                        <x-outline-button type="button" wire:click="openEdit('{{ $row->diag_id }}')">
-                                            Edit
-                                        </x-outline-button>
+                                <tr wire:key="diagnosa-row-{{ $row->diag_id }}"
+                                    class="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                                    <td class="px-4 py-3">{{ $row->diag_id }}</td>
+                                    <td class="px-4 py-3">
+                                        <x-badge variant="info" class="font-mono">
+                                            {{ $row->icdx }}
+                                        </x-badge>
+                                    </td>
+                                    <td class="px-4 py-3 font-semibold">{{ $row->diag_desc }}</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-wrap gap-2">
+                                            <x-outline-button type="button"
+                                                wire:click="openEdit('{{ $row->diag_id }}')">
+                                                Edit
+                                            </x-outline-button>
 
-                                        <x-confirm-button variant="danger"
-                                            :action="'requestDelete(\'' . $row->diag_id . '\')'" title="Hapus Diagnosa"
-                                            message="Yakin hapus data diagnosa {{ $row->diag_desc }}?"
-                                            confirmText="Ya, hapus" cancelText="Batal">
-                                            Hapus
-                                        </x-confirm-button>
-                                    </div>
-                                </td>
-                            </tr>
+                                            <x-confirm-button variant="danger" :action="'requestDelete(\'' . $row->diag_id . '\')'" title="Hapus Diagnosa"
+                                                message="Yakin hapus data diagnosa {{ $row->diag_desc }}?"
+                                                confirmText="Ya, hapus" cancelText="Batal">
+                                                Hapus
+                                            </x-confirm-button>
+                                        </div>
+                                    </td>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="4" class="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
-                                    Data belum ada.
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td colspan="4" class="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                                        Data belum ada.
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -204,7 +200,7 @@ new class extends Component {
             </div>
 
             {{-- Child actions component --}}
-            <livewire:pages::master.master-diagnosa.master-diagnosa-actions />
+            <livewire:pages::master.master-diagnosa.master-diagnosa-actions wire:key="master-diagnosa-actions" />
         </div>
     </div>
 </div>

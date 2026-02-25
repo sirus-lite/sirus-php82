@@ -13,6 +13,9 @@ new class extends Component {
     public ?int $rjNo = null;
     public array $dataDaftarPoliRJ = [];
 
+    //radio
+    public $suspekAkibatKerja;
+
     // renderVersions
     public array $renderVersions = [];
     protected array $renderAreas = ['modal-pemeriksaan-rj'];
@@ -20,16 +23,18 @@ new class extends Component {
     /* ===============================
      | OPEN REKAM MEDIS PERAWAT - PEMERIKSAAN
      =============================== */
-    public function openPemeriksaan(int $rjNo = null): void
+    #[On('open-rm-pemeriksan-rj')]
+    public function openPemeriksaan($rjNo): void
     {
         if (empty($rjNo)) {
             return;
         }
 
+        $this->$rjNo = $rjNo;
+
         $this->resetForm();
         $this->resetValidation();
         // Ambil data kunjungan RJ
-        $this->rjNo = $rjNo;
         $dataDaftarPoliRJ = $this->findDataRJ($rjNo);
 
         if (!$dataDaftarPoliRJ) {
@@ -42,6 +47,10 @@ new class extends Component {
         // Initialize pemeriksaan data if not exists
         if (!isset($this->dataDaftarPoliRJ['pemeriksaan'])) {
             $this->dataDaftarPoliRJ['pemeriksaan'] = $this->getDefaultPemeriksaan();
+        }
+
+        if (isset($this->dataDaftarPoliRJ['pemeriksaan']['suspekAkibatKerja']['suspekAkibatKerja'])) {
+            $this->suspekAkibatKerja = $this->dataDaftarPoliRJ['pemeriksaan']['suspekAkibatKerja']['suspekAkibatKerja'];
         }
 
         // 🔥 INCREMENT: Refresh seluruh modal pemeriksaan
@@ -417,13 +426,10 @@ new class extends Component {
 
                 // Untuk update, ambil data existing dari database
                 $existingData = $this->findDataRJ($this->rjNo);
-
                 // Ambil hanya field pemeriksaan yang diizinkan dari form
                 $formPemeriksaan = array_intersect_key($this->dataDaftarPoliRJ ?? [], array_flip($allowedPemeriksaanFields));
-
                 // Merge pemeriksaan data: existing diupdate dengan form data
                 $mergedData = array_replace_recursive($existingData ?? [], $formPemeriksaan);
-
                 // Update RJ with merged data
                 $this->updateJsonRJ($this->rjNo, $mergedData);
             });
@@ -487,6 +493,12 @@ new class extends Component {
         if (str_contains($propertyName, 'pemeriksaan.nutrisi.bb') || str_contains($propertyName, 'pemeriksaan.nutrisi.tb')) {
             $this->hitungIMT();
         }
+
+        // Cek apakah property yang di-update adalah suspekAkibatKerja Radio button
+        if ($propertyName === 'suspekAkibatKerja') {
+            $this->suspekAkibatKerja = $value;
+            $this->dataDaftarPoliRJ['pemeriksaan']['suspekAkibatKerja']['suspekAkibatKerja'] = $value;
+        }
     }
 
     private function afterSave(string $message): void
@@ -495,12 +507,10 @@ new class extends Component {
         $this->incrementVersion('modal-pemeriksaan-rj');
 
         $this->dispatch('toast', type: 'success', message: $message);
-        $this->dispatch('refresh-after-rj.saved');
     }
 
     protected function resetForm(): void
     {
-        $this->reset(['rjNo', 'dataDaftarPoliRJ']);
         $this->resetVersion();
         $this->isFormLocked = false;
     }
@@ -508,33 +518,12 @@ new class extends Component {
     public function mount()
     {
         $this->registerAreas(['modal-pemeriksaan-rj']);
-        $this->openPemeriksaan($this->rjNo);
     }
 };
 
 ?>
 
 <div>
-
-    {{-- TAMPILKAN SEMUA ERROR --}}
-    @if ($errors->any())
-        <div class="p-4 mb-4 text-red-800 bg-red-100 border-l-4 border-red-500 rounded-r-lg dark:bg-red-900 dark:text-red-300"
-            role="alert">
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                        clip-rule="evenodd" />
-                </svg>
-                <span class="font-medium">Terdapat {{ $errors->count() }} kesalahan pada form:</span>
-            </div>
-            <ul class="mt-2 ml-6 list-disc list-inside">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
     {{-- CONTAINER UTAMA --}}
     <div class="flex flex-col w-full" wire:key="{{ $this->renderKey('modal-pemeriksaan-rj', [$rjNo ?? 'new']) }}">
 

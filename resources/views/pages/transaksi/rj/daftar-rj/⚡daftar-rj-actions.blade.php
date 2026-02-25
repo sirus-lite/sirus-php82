@@ -1552,7 +1552,8 @@ new class extends Component {
                                         @endif
 
                                         {{-- Panggil komponen Livewire modal Vclaim --}}
-                                        <livewire:pages::transaksi.rj.daftar-rj.vclaim-rj-actions :initialRjNo="$rjNo ?? null" />
+                                        <livewire:pages::transaksi.rj.daftar-rj.vclaim-rj-actions :initialRjNo="$rjNo ?? null"
+                                            wire:key="vclaim-rj-actions-{{ $rjNo ?? 'new' }}" />
 
                                         <div class="grid">
                                             <x-input-label value="No SEP" />

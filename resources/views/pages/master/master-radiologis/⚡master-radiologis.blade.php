@@ -30,7 +30,7 @@ new class extends Component {
     /* =========================
      | Child modal triggers
      * ========================= */
-    
+
     // ==================== OPEN CREATE MODAL ====================
     public function openCreate(): void
     {
@@ -50,7 +50,7 @@ new class extends Component {
     {
         $this->dispatch('master.radiologis.requestDelete', radId: $radId);
     }
-    
+
     /* =========================
      | Refresh after child save
      * ========================= */
@@ -64,16 +64,14 @@ new class extends Component {
     /* =========================
      | Computed queries
      * ========================= */
-    
+
     // ==================== BASE QUERY ====================
     #[Computed]
     public function baseQuery()
     {
         $searchKeyword = trim($this->searchKeyword);
 
-        $queryBuilder = DB::table('rsmst_radiologis')
-            ->select('rad_id', 'rad_desc', 'rad_price', 'active_status', 'rad_jd', 'rad_jm')
-            ->orderBy('rad_desc', 'asc');
+        $queryBuilder = DB::table('rsmst_radiologis')->select('rad_id', 'rad_desc', 'rad_price', 'active_status', 'rad_jd', 'rad_jm')->orderBy('rad_desc', 'asc');
 
         if ($searchKeyword !== '') {
             $uppercaseKeyword = mb_strtoupper($searchKeyword);
@@ -182,48 +180,49 @@ new class extends Component {
 
                         <tbody class="text-gray-700 divide-y divide-gray-200 dark:divide-gray-700 dark:text-gray-200">
                             @forelse($this->rows as $row)
-                            <tr wire:key="radiologis-row-{{ $row->rad_id }}"
-                                class="hover:bg-gray-50 dark:hover:bg-gray-800/60">
-                                <td class="px-4 py-3 font-mono">{{ $row->rad_id }}</td>
-                                <td class="px-4 py-3 font-semibold">{{ $row->rad_desc }}</td>
-                                <td class="px-4 py-3">{{ $this->formatRupiah($row->rad_price) }}</td>
-                                <td class="px-4 py-3">
-                                    <x-badge :variant="$row->active_status === '1' ? 'success' : 'danger'">
-                                        {{ $row->active_status === '1' ? 'Aktif' : 'Tidak Aktif' }}
-                                    </x-badge>
-                                </td>
-                                <td class="px-4 py-3">{{ $row->rad_jd ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $row->rad_jm ?? '-' }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-wrap justify-center gap-2">
-                                        <x-outline-button type="button" wire:click="openEdit('{{ $row->rad_id }}')">
-                                            Edit
-                                        </x-outline-button>
+                                <tr wire:key="radiologis-row-{{ $row->rad_id }}"
+                                    class="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                                    <td class="px-4 py-3 font-mono">{{ $row->rad_id }}</td>
+                                    <td class="px-4 py-3 font-semibold">{{ $row->rad_desc }}</td>
+                                    <td class="px-4 py-3">{{ $this->formatRupiah($row->rad_price) }}</td>
+                                    <td class="px-4 py-3">
+                                        <x-badge :variant="$row->active_status === '1' ? 'success' : 'danger'">
+                                            {{ $row->active_status === '1' ? 'Aktif' : 'Tidak Aktif' }}
+                                        </x-badge>
+                                    </td>
+                                    <td class="px-4 py-3">{{ $row->rad_jd ?? '-' }}</td>
+                                    <td class="px-4 py-3">{{ $row->rad_jm ?? '-' }}</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-wrap justify-center gap-2">
+                                            <x-outline-button type="button"
+                                                wire:click="openEdit('{{ $row->rad_id }}')">
+                                                Edit
+                                            </x-outline-button>
 
-                                        <x-confirm-button variant="danger"
-                                            :action="'requestDelete(\'' . $row->rad_id . '\')'" title="Hapus Radiologis"
-                                            message="Yakin hapus data radiologis {{ $row->rad_desc }}?"
-                                            confirmText="Ya, hapus" cancelText="Batal">
-                                            Hapus
-                                        </x-confirm-button>
-                                    </div>
-                                </td>
-                            </tr>
+                                            <x-confirm-button variant="danger" :action="'requestDelete(\'' . $row->rad_id . '\')'"
+                                                title="Hapus Radiologis"
+                                                message="Yakin hapus data radiologis {{ $row->rad_desc }}?"
+                                                confirmText="Ya, hapus" cancelText="Batal">
+                                                Hapus
+                                            </x-confirm-button>
+                                        </div>
+                                    </td>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="7" class="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
-                                    <div class="flex flex-col items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mb-3 text-gray-400"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        <p class="text-gray-500 dark:text-gray-400">Belum ada data radiologis.</p>
-                                        <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">Klik tombol "Tambah
-                                            Radiologis" untuk menambahkan data.</p>
-                                    </div>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td colspan="7" class="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mb-3 text-gray-400"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <p class="text-gray-500 dark:text-gray-400">Belum ada data radiologis.</p>
+                                            <p class="mt-1 text-sm text-gray-400 dark:text-gray-500">Klik tombol "Tambah
+                                                Radiologis" untuk menambahkan data.</p>
+                                        </div>
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -238,7 +237,7 @@ new class extends Component {
 
 
             {{-- Child actions component (modal CRUD) --}}
-            <livewire:pages::master.master-radiologis.master-radiologis-actions />
+            <livewire:pages::master.master-radiologis.master-radiologis-actions wire:key="master-radiologis-actions" />
         </div>
     </div>
 </div>
