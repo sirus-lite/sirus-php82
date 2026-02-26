@@ -66,6 +66,7 @@ trait EmrRJTrait
         if ($row) {
             $this->populateFromDatabaseEmrRJ($builtData, $row);
         }
+
         // 4. Jika build dari DB gagal (return default), kembalikan default
         return $builtData;
     }
@@ -98,7 +99,7 @@ trait EmrRJTrait
     /**
      * Build RJ data from database (only called if JSON is missing)
      */
-    private function populateFromDatabaseEmrRJ(array &$dataPasien, object $row): void
+    private function populateFromDatabaseEmrRJ(array &$dataDaftarRJ, object $row): void
     {
         // ============================================
         // POPULATE DATA DARI VIEW

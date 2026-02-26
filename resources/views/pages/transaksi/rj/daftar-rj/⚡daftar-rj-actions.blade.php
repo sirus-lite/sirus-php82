@@ -69,8 +69,9 @@ new class extends Component {
             ->whereRaw('? BETWEEN shift_start AND shift_end', [$nowTime])
             ->first();
 
-        $this->dataDaftarPoliRJ['shift'] = $findShift->shift ?? 3;
+        $this->dataDaftarPoliRJ['shift'] = (string) ($findShift->shift ?? 3);
 
+        $this->incrementVersion('modal');
         $this->dispatch('open-modal', name: 'rj-actions');
     }
 
@@ -105,6 +106,7 @@ new class extends Component {
         $this->syncFromDataDaftarPoliRJ();
 
         // Buka modal
+        $this->incrementVersion('modal');
         $this->dispatch('open-modal', name: 'rj-actions');
     }
 
@@ -1267,8 +1269,6 @@ new class extends Component {
     {
         // Atau register manual
         $this->registerAreas(['modal', 'pasien', 'dokter']);
-
-        $this->dataDaftarPoliRJ['rjDate'] = Carbon::now()->format('d/m/Y H:i:s');
     }
 };
 
@@ -1335,13 +1335,15 @@ new class extends Component {
                         {{-- Shift --}}
                         <div class="w-36">
                             <x-input-label value="Shift" />
-                            <x-select-input wire:model.live="dataDaftarPoliRJ.shift" class="w-full mt-1 sm:w-36"
-                                :error="$errors->has('dataDaftarPoliRJ.shift')" :disabled="$isFormLocked">
+                            <x-select-input id="dataDaftarPoliRJ.shift" wire:model.live="dataDaftarPoliRJ.shift"
+                                class="w-full mt-1 sm:w-36" :error="$errors->has('dataDaftarPoliRJ.shift')" :disabled="$isFormLocked">
                                 <option value="">-- Pilih Shift --</option>
                                 <option value="1">Shift 1</option>
                                 <option value="2">Shift 2</option>
                                 <option value="3">Shift 3</option>
                             </x-select-input>
+
+
                             <x-input-error :messages="$errors->get('dataDaftarPoliRJ.shift')" class="mt-1" />
                         </div>
                     </div>
