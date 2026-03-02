@@ -269,8 +269,40 @@ new class extends Component {
             return;
         }
 
-        $this->updateJsonRJ($this->rjNo, $this->dataDaftarPoliRJ);
-        $this->afterSave('Diagnosis berhasil disimpan.');
+        // ✅ Guard: jangan simpan kalau dataDaftarPoliRJ kosong
+        if (empty($this->dataDaftarPoliRJ)) {
+            $this->dispatch('toast', type: 'error', message: 'Data kunjungan tidak ditemukan, silakan buka ulang form.');
+            return;
+        }
+
+        try {
+            DB::transaction(function () {
+                // Whitelist field yang boleh diupdate
+                $allowedFields = ['diagnosis', 'procedure', 'diagnosisFreeText', 'procedureFreeText'];
+
+                // Ambil data existing dari database
+                $existingData = $this->findDataRJ($this->rjNo) ?? [];
+
+                // Ambil hanya field yang diizinkan dari form
+                $formData = array_intersect_key($this->dataDaftarPoliRJ ?? [], array_flip($allowedFields));
+
+                // Merge field associative pakai array_replace_recursive
+                $mergedData = array_replace_recursive($existingData, $formData);
+
+                // ✅ Overwrite langsung field array list agar tambah/hapus/kosong aman
+                $mergedData['diagnosis'] = $formData['diagnosis'] ?? [];
+                $mergedData['procedure'] = $formData['procedure'] ?? [];
+
+                // ✅ Free text langsung dari form (string, bukan list)
+                $mergedData['diagnosisFreeText'] = $formData['diagnosisFreeText'] ?? '';
+                $mergedData['procedureFreeText'] = $formData['procedureFreeText'] ?? '';
+
+                // Update RJ with merged data
+                $this->updateJsonRJ($this->rjNo, $mergedData);
+            });
+        } catch (\Exception $e) {
+            $this->dispatch('toast', type: 'error', message: 'Gagal menyimpan: ' . $e->getMessage());
+        }
     }
 
     /* ===============================

@@ -163,9 +163,9 @@ new class extends Component {
 
             {{-- BODY --}}
             <div class="flex-1 px-4 py-4 bg-gray-50/70 dark:bg-gray-950/20">
-                <div class="max-w-full mx-auto">
+                <div class="grid max-w-full grid-cols-3 gap-4 mx-auto">
                     <div
-                        class="p-4 space-y-6 bg-white border border-gray-200 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-700">
+                        class="col-span-2 p-4 space-y-6 bg-white border border-gray-200 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-700">
 
                         {{-- Data Pasien --}}
                         <div>
@@ -207,8 +207,9 @@ new class extends Component {
                                 x-transition:enter="transition ease-out duration-300"
                                 x-transition:enter-start="opacity-0 transform scale-95"
                                 x-transition:enter-end="opacity-100 transform scale-100">
-                                {{-- <livewire:emr-r-j.eresep-r-j.eresep-r-j
-                                    :wire:key="'eresep-nonracikan-' . ($rjNo ?? 'new')" :rjNoRef="$rjNo" /> --}}
+
+                                <livewire:pages::transaksi.rj.eresep-rj.eresep-rj-non-racikan
+                                    :wire:key="'eresep-non-racikan-rj-' . ($rjNo ?? 'new')" :rjNo="$rjNo" />
                             </div>
 
                             {{-- Konten Tab Racikan --}}
@@ -216,25 +217,16 @@ new class extends Component {
                                 x-transition:enter="transition ease-out duration-300"
                                 x-transition:enter-start="opacity-0 transform scale-95"
                                 x-transition:enter-end="opacity-100 transform scale-100">
-                                {{-- <livewire:emr-r-j.eresep-r-j.eresep-r-j-racikan
-                                    :wire:key="'eresep-racikan-' . ($rjNo ?? 'new')" :rjNoRef="$rjNo" /> --}}
+                                <livewire:pages::transaksi.rj.eresep-rj.eresep-rj-racikan
+                                    :wire:key="'eresep-racikan-rj-' . ($rjNo ?? 'new')" :rjNo="$rjNo" />
                             </div>
                         </div>
+                    </div>
 
-                        {{-- (Opsional) Template Resep --}}
-                        {{-- @if (isset($myQueryData) && $myQueryData->count())
-                            <div class="w-full p-2 bg-gray-100 rounded-lg">
-                                <div class="text-lg font-bold text-center text-primary">Template Resep</div>
-                                <div class="flex justify-center gap-2">
-                                    @foreach ($myQueryData as $key => $myData)
-                                        <x-light-button
-                                            wire:click="copyResepFromTemplate('{{ $rjNo }}','{{ $myData->temp_json_nonracikan ?? '{}' }}','{{ $myData->temp_json_racikan ?? '{}' }}')">
-                                            {{ $key + 1 }} {{ $myData->tempr_desc }}
-                                        </x-light-button>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif --}}
+                    <div>
+                        {{-- REKAM MEDIS --}}
+                        <livewire:pages::.components.rekam-medis.rekam-medis-display :regNo="$dataDaftarPoliRJ['regNo'] ?? ''"
+                            wire:key="emr-rj.eresep-rj-rekam-medis-display-rj-{{ $dataDaftarPoliRJ['regNo'] ?? 'new' }}" />
                     </div>
                 </div>
             </div>

@@ -5,6 +5,7 @@ use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\DB;
 use App\Http\Traits\Txn\Rj\EmrRJTrait;
+use Livewire\Attributes\Reactive;
 
 new class extends Component {
     use WithPagination;
@@ -15,6 +16,7 @@ new class extends Component {
     /* =======================
      | Filter & Pagination
      * ======================= */
+    #[Reactive]
     public string $regNo = '';
     public string $searchKeyword = '';
     public string $filterTahun = '';
@@ -24,14 +26,6 @@ new class extends Component {
     // i-Care
     public bool $isOpenRekamMedisicare = false;
     public string $icareUrlResponse = '';
-
-    /* =======================
-     | Listeners
-     * ======================= */
-    protected $listeners = [
-        'refreshRmPerencanaan' => '$refresh',
-        'loadPasien' => 'loadPasien',
-    ];
 
     /* =======================
      | Mount

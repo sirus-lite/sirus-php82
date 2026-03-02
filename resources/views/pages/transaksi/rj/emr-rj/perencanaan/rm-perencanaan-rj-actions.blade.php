@@ -69,6 +69,8 @@ new class extends Component {
         }
 
         $this->dispatch('emr-rj.eresep.open', rjNo: $this->rjNo);
+        $this->dispatch('open-eresep-non-racikan-rj', rjNo: $this->rjNo);
+        $this->dispatch('open-eresep-racikan-rj', rjNo: $this->rjNo);
     }
     /* ===============================
      | GET DEFAULT PERENCANAAN STRUCTURE

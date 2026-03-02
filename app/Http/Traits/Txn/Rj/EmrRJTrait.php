@@ -14,7 +14,7 @@ trait EmrRJTrait
      * - If null/invalid: fallback to database query (once)
      * - Validate rj_no: if not found or mismatched, return error
      */
-    protected function findDataRJ(int $rjNo): array
+    protected function findDataRJ($rjNo): array
     {
         // 1. Ambil JSON dari DB
         $row = DB::table('rsview_rjkasir')
@@ -253,7 +253,7 @@ trait EmrRJTrait
     /**
      * Check RJ status
      */
-    protected function checkRJStatus(string $rjNo): bool
+    protected function checkRJStatus($rjNo): bool
     {
         $rjStatus = DB::table('rstxn_rjhdrs')
             ->select('rj_status')
@@ -267,7 +267,7 @@ trait EmrRJTrait
         return $rjStatus->rj_status !== 'A';
     }
 
-    protected function checkEmrRJStatus(string $rjNo): bool
+    protected function checkEmrRJStatus($rjNo): bool
     {
         $rjStatus = DB::table('rstxn_rjhdrs')
             ->select('erm_status')

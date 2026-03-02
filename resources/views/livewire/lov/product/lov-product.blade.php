@@ -54,14 +54,12 @@ new class extends Component {
 
     public function updatedSearch(): void
     {
-        // kalau sudah selected, jangan cari lagi
         if ($this->selected !== null) {
             return;
         }
 
         $keyword = trim($this->search);
 
-        // minimal 2 char
         if (mb_strlen($keyword) < 2) {
             $this->closeAndResetList();
             return;
@@ -86,36 +84,30 @@ new class extends Component {
         }
 
         // ===== 2) search by name / content / id partial =====
-        $upperKeyword = mb_strtoupper($keyword);
-
         $rows = DB::select(
-            "
-            SELECT * FROM (
-                SELECT
-                    a.product_id,
-                    a.product_name,
-                    a.sales_price,
-                    (
-                        SELECT REPLACE(STRING_AGG(x.cont_desc), ',', '') || a.product_name
-                        FROM immst_productcontents z
-                        INNER JOIN immst_contents x ON z.cont_id = x.cont_id
-                        WHERE z.product_id = a.product_id
-                    ) as elasticsearch,
-                    (
-                        SELECT STRING_AGG(x.cont_desc)
-                        FROM immst_productcontents z
-                        INNER JOIN immst_contents x ON z.cont_id = x.cont_id
-                        WHERE z.product_id = a.product_id
-                    ) as product_content
-                FROM immst_products a
-                WHERE a.active_status = '1'
-                GROUP BY a.product_id, a.product_name, a.sales_price
-                ORDER BY a.product_name
-            ) subquery
-            WHERE UPPER(elasticsearch) LIKE '%' || ? || '%'
-            LIMIT 50
-        ",
-            [$upperKeyword],
+            "select * from (
+                    select product_id,
+                    product_name,
+                    sales_price,
+
+                    (select replace(string_agg(cont_desc),',','')||product_name
+                    from immst_productcontents z,immst_contents x
+                    where z.product_id=a.product_id
+                    and z.cont_id=x.cont_id)elasticsearch,
+
+                    (select string_agg(cont_desc)
+                    from immst_productcontents z,immst_contents x
+                    where z.product_id=a.product_id
+                    and z.cont_id=x.cont_id)product_content
+
+                    from immst_products a
+                    where active_status='1'
+                    group by product_id,product_name, sales_price
+                    order by product_name)
+
+                    where upper(elasticsearch) like '%'||:search||'%'
+                    ",
+            ['search' => strtoupper($keyword)],
         );
 
         $this->options = array_map(function ($row) {
