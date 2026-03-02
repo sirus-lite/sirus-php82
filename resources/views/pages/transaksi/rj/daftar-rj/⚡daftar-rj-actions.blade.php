@@ -73,6 +73,7 @@ new class extends Component {
 
         $this->incrementVersion('modal');
         $this->dispatch('open-modal', name: 'rj-actions');
+        $this->dispatch('focus-cari-pasien');
     }
 
     /* ===============================
@@ -108,6 +109,9 @@ new class extends Component {
         // Buka modal
         $this->incrementVersion('modal');
         $this->dispatch('open-modal', name: 'rj-actions');
+        if (empty($this->dataDaftarPoliRJ['regNo'])) {
+            $this->dispatch('focus-cari-pasien');
+        }
     }
 
     public function closeModal(): void
@@ -1118,6 +1122,7 @@ new class extends Component {
         $this->dataPasien = $this->findDataMasterPasien($this->dataDaftarPoliRJ['regNo'] ?? '');
         $this->incrementVersion('pasien');
         $this->incrementVersion('modal');
+        $this->dispatch('focus-cari-dokter');
     }
 
     #[On('lov.selected.rjFormDokter')]
@@ -1129,6 +1134,7 @@ new class extends Component {
         $this->dataDaftarPoliRJ['poliDesc'] = $payload['poli_desc'] ?? '';
         $this->incrementVersion('dokter');
         $this->incrementVersion('modal');
+        $this->dispatch('focus-klaim-options');
     }
 
     public function updated($name, $value)
@@ -1169,6 +1175,7 @@ new class extends Component {
             $this->dataDaftarPoliRJ['postInap'] = false;
 
             $this->resetKontrolInternal();
+            $this->dispatch('focus-no-referensi');
         }
 
         // Kontrol12
@@ -1274,13 +1281,12 @@ new class extends Component {
 
 <div>
     <x-modal name="rj-actions" size="full" height="full" focusable>
-        {{-- CONTAINER UTAMA - SATU-SATUNYA WIRE:KEY --}}
+        {{-- CONTAINER UTAMA --}}
         <div class="flex flex-col min-h-[calc(100vh-8rem)]"
             wire:key="{{ $this->renderKey('modal', [$formMode, $rjNo ?? 'new']) }}">
 
             {{-- HEADER --}}
             <div class="relative px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-                {{-- Background pattern --}}
                 <div class="absolute inset-0 opacity-[0.06] dark:opacity-[0.10]"
                     style="background-image: radial-gradient(currentColor 1px, transparent 1px); background-size: 14px 14px;">
                 </div>
@@ -1288,7 +1294,6 @@ new class extends Component {
                 <div class="relative flex items-start justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-3">
-                            {{-- Icon --}}
                             <div
                                 class="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-green/10 dark:bg-brand-lime/15">
                                 <img src="{{ asset('images/Logogram black solid.png') }}" alt="RSI Madinah"
@@ -1296,8 +1301,6 @@ new class extends Component {
                                 <img src="{{ asset('images/Logogram white solid.png') }}" alt="RSI Madinah"
                                     class="hidden w-6 h-6 dark:block" />
                             </div>
-
-                            {{-- Title & subtitle --}}
                             <div>
                                 <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
                                     {{ $formMode === 'edit' ? 'Ubah Data Rawat Jalan' : 'Tambah Data Rawat Jalan' }}
@@ -1308,15 +1311,12 @@ new class extends Component {
                             </div>
                         </div>
 
-                        {{-- Badge mode --}}
                         <div class="flex gap-2 mt-3">
                             <x-badge :variant="$formMode === 'edit' ? 'warning' : 'success'">
                                 {{ $formMode === 'edit' ? 'Mode: Edit' : 'Mode: Tambah' }}
                             </x-badge>
                             @if ($isFormLocked)
-                                <x-badge variant="danger">
-                                    Read Only
-                                </x-badge>
+                                <x-badge variant="danger">Read Only</x-badge>
                             @endif
                         </div>
                     </div>
@@ -1332,15 +1332,13 @@ new class extends Component {
                         {{-- Shift --}}
                         <div class="w-36">
                             <x-input-label value="Shift" />
-                            <x-select-input id="dataDaftarPoliRJ.shift" wire:model.live="dataDaftarPoliRJ.shift"
-                                class="w-full mt-1 sm:w-36" :error="$errors->has('dataDaftarPoliRJ.shift')" :disabled="$isFormLocked">
+                            <x-select-input wire:model.live="dataDaftarPoliRJ.shift" class="w-full mt-1 sm:w-36"
+                                :error="$errors->has('dataDaftarPoliRJ.shift')" :disabled="$isFormLocked">
                                 <option value="">-- Pilih Shift --</option>
                                 <option value="1">Shift 1</option>
                                 <option value="2">Shift 2</option>
                                 <option value="3">Shift 3</option>
                             </x-select-input>
-
-
                             <x-input-error :messages="$errors->get('dataDaftarPoliRJ.shift')" class="mt-1" />
                         </div>
                     </div>
@@ -1358,22 +1356,22 @@ new class extends Component {
             </div>
 
             {{-- BODY --}}
-            <div class="flex-1 px-4 py-4 bg-gray-50/70 dark:bg-gray-950/20">
-
+            {{-- x-data root: tempat semua x-ref didefinisikan & listener focus-cari-pasien --}}
+            <div class="flex-1 px-4 py-4 bg-gray-50/70 dark:bg-gray-950/20" x-data
+                x-on:focus-cari-pasien.window="
+                                                    $nextTick(() => setTimeout(() => $refs.lovPasien?.querySelector('input')?.focus(), 150))
+                                                "
+                x-on:focus-cari-dokter.window="
+                                                    $nextTick(() => setTimeout(() => $refs.lovDokter?.querySelector('input')?.focus(), 150))
+                                                "
+                x-on:focus-klaim-options.window="
+                                                    $nextTick(() => setTimeout(() => $refs.klaimOptions?.querySelector('input[type=radio]')?.focus(), 150))
+                                                "
+                x-on:focus-no-referensi.window="
+                                                    $nextTick(() => setTimeout(() => $refs.inputNoReferensi?.querySelector('input')?.focus(), 150))
+                                                ">
                 <div class="max-w-full mx-auto">
-                    <div class="p-1 space-y-1" x-data
-                        @keydown.enter.prevent="
-                            if(!$wire.isFormLocked) {
-                                let f = [...$el.querySelectorAll('input,select')]
-                                    .filter(e => !e.disabled && e.type !== 'hidden');
-
-                                let i = f.indexOf($event.target);
-
-                                if(i > -1 && i < f.length - 1){
-                                    f[i+1].focus();
-                                }
-                            }
-                        ">
+                    <div class="p-1 space-y-1">
                         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 
                             {{-- ========================= --}}
@@ -1394,37 +1392,48 @@ new class extends Component {
                                     <x-input-error :messages="$errors->get('dataDaftarPoliRJ.passStatus')" class="mt-1" />
                                 </div>
 
-                                {{-- LOV Pasien --}}
-                                <div class="mt-2">
+                                {{-- LOV Pasien — Ref: 1 → Enter ke lovDokter --}}
+                                <div class="mt-2" x-ref="lovPasien"
+                                    x-on:keydown.enter.prevent="
+                                        if (!$wire.isFormLocked)
+                                            $nextTick(() => $refs.lovDokter?.querySelector('input')?.focus())
+                                    ">
                                     <livewire:lov.pasien.lov-pasien target="rjFormPasien" :initialRegNo="$dataDaftarPoliRJ['regNo'] ?? ''"
                                         :disabled="$isFormLocked" />
                                     <x-input-error :messages="$errors->get('dataDaftarPoliRJ.regNo')" class="mt-1" />
                                 </div>
 
-                                {{-- LOV Dokter --}}
-                                <div class="mt-2">
+                                {{-- LOV Dokter — Ref: 2 → Enter ke inputKlaimId (radio pertama) --}}
+                                <div class="mt-2" x-ref="lovDokter"
+                                    x-on:keydown.enter.prevent="
+                                        if (!$wire.isFormLocked)
+                                            $nextTick(() => $refs.klaimOptions?.querySelector('input[type=radio]')?.focus())
+                                    ">
                                     <livewire:lov.dokter.lov-dokter label="Cari Dokter - Poli" target="rjFormDokter"
                                         :initialDrId="$dataDaftarPoliRJ['drId'] ?? null" :disabled="$isFormLocked" />
-                                    {{-- Error untuk Dokter --}}
                                     <x-input-error :messages="$errors->get('dataDaftarPoliRJ.drId')" class="mt-1" />
                                     <x-input-error :messages="$errors->get('dataDaftarPoliRJ.drDesc')" class="mt-1" />
-
-                                    {{-- Error untuk Poli --}}
                                     <x-input-error :messages="$errors->get('dataDaftarPoliRJ.poliId')" class="mt-1" />
                                     <x-input-error :messages="$errors->get('dataDaftarPoliRJ.poliDesc')" class="mt-1" />
                                 </div>
 
-                                {{-- Jenis Klaim --}}
-                                <div>
+                                {{-- Jenis Klaim — Ref: 3 → Enter ke noReferensi (jika BPJS) atau Simpan --}}
+                                <div x-ref="klaimOptions"
+                                    x-on:keydown.enter.prevent="
+                                        if (!$wire.isFormLocked) {
+                                            let next = $refs.inputNoReferensi ?? $refs.inputNoSep;
+                                            $nextTick(() => next?.querySelector('input')?.focus() ?? next?.focus())
+                                        }
+                                    ">
                                     <x-input-label value="Jenis Klaim" />
                                     <div class="grid grid-cols-5 gap-2 mt-2">
-                                        @foreach ($klaimOptions ?? [] as $index => $klaim)
+                                        @foreach ($klaimOptions ?? [] as $klaim)
                                             <x-radio-button :label="$klaim['klaimDesc']" :value="(string) $klaim['klaimId']" name="klaimId"
                                                 wire:model.live="klaimId" :disabled="$isFormLocked" />
                                         @endforeach
                                     </div>
+                                    <x-input-error :messages="$errors->get('dataDaftarPoliRJ.klaimId')" class="mt-1" />
                                 </div>
-                                <x-input-error :messages="$errors->get('dataDaftarPoliRJ.klaimId')" class="mt-1" />
 
                             </div>
 
@@ -1434,18 +1443,18 @@ new class extends Component {
                             <div
                                 class="p-6 space-y-6 bg-white border border-gray-200 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-700">
 
-                                {{-- Jenis Kunjungan --}}
                                 @if (($dataDaftarPoliRJ['klaimStatus'] ?? '') === 'BPJS' || ($dataDaftarPoliRJ['klaimId'] ?? '') === 'JM')
+
+                                    {{-- Jenis Kunjungan --}}
                                     <div>
                                         <x-input-label value="Jenis Kunjungan" />
                                         <div class="grid grid-cols-4 gap-2">
-                                            @foreach ($kunjunganOptions ?? [] as $index => $kunjungan)
+                                            @foreach ($kunjunganOptions ?? [] as $kunjungan)
                                                 <x-radio-button :label="$kunjungan['kunjunganDesc']" :value="$kunjungan['kunjunganId']" name="kunjunganId"
                                                     wire:model.live="kunjunganId" :disabled="$isFormLocked" />
                                             @endforeach
                                         </div>
 
-                                        {{-- LOGIC POST INAP & KONTROL 1/2 --}}
                                         <div class="mt-2">
                                             @if (($dataDaftarPoliRJ['kunjunganId'] ?? '') === '3')
                                                 <x-toggle wire:model.live="dataDaftarPoliRJ.postInap" trueValue="1"
@@ -1453,18 +1462,16 @@ new class extends Component {
                                             @endif
 
                                             <div class="grid grid-cols-2 gap-2 mt-2">
-                                                {{-- Internal 1/2: tampil saat kunjungan Rujukan Internal --}}
                                                 @if ($kunjunganId === '2')
-                                                    @foreach ($internal12Options ?? [] as $index => $internal)
+                                                    @foreach ($internal12Options ?? [] as $internal)
                                                         <x-radio-button :label="__($internal['internal12Desc'])"
                                                             value="{{ $internal['internal12'] }}" name="internal12"
                                                             wire:model.live="internal12" :disabled="$isFormLocked" />
                                                     @endforeach
                                                 @endif
 
-                                                {{-- Kontrol 1/2: tampil saat kunjungan Kontrol --}}
                                                 @if ($kunjunganId === '3')
-                                                    @foreach ($kontrol12Options ?? [] as $index => $kontrol)
+                                                    @foreach ($kontrol12Options ?? [] as $kontrol)
                                                         <x-radio-button :label="__($kontrol['kontrol12Desc'])"
                                                             value="{{ $kontrol['kontrol12'] }}" name="kontrol12"
                                                             wire:model.live="kontrol12" :disabled="$isFormLocked" />
@@ -1474,39 +1481,42 @@ new class extends Component {
                                         </div>
                                     </div>
 
-                                    {{-- No Referensi --}}
-                                    <div class="space-y-3 ">
-                                        <div class="grid">
+                                    {{-- No Referensi — Ref: 4 → Enter ke inputNoSep --}}
+                                    <div class="space-y-3">
+                                        <div class="grid" x-ref="inputNoReferensi">
                                             <x-input-label value="No Referensi" />
                                             <x-text-input wire:model.live="dataDaftarPoliRJ.noReferensi"
-                                                :disabled="$isFormLocked" />
+                                                :disabled="$isFormLocked"
+                                                x-on:keydown.enter.prevent="
+                                                    if (!$wire.isFormLocked)
+                                                        $nextTick(() => $refs.inputNoSep?.focus())
+                                                " />
                                             <x-input-error :messages="$errors->get('dataDaftarPoliRJ.noReferensi')" />
                                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                di isi dgn : (No Rujukan untun FKTP /FKTL) (SKDP untuk Kontrol / Rujukan
+                                                di isi dgn : (No Rujukan untuk FKTP/FKTL) (SKDP untuk Kontrol/Rujukan
                                                 Internal)
                                             </p>
                                         </div>
 
-                                        {{-- Tombol untuk membuka modal Vclaim RJ Actions --}}
+                                        {{-- Tombol Kelola SEP --}}
                                         <div class="flex flex-wrap items-center gap-2 mt-2">
                                             <x-secondary-button type="button" wire:click="openVclaimModal"
                                                 class="gap-2 text-xs">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linecap="round"
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2"
                                                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
                                                 Kelola SEP BPJS
                                             </x-secondary-button>
 
-                                            {{-- Tampilkan info SEP jika sudah ada --}}
                                             @if (!empty($dataDaftarPoliRJ['sep']['noSep']))
                                                 <div
                                                     class="flex items-center gap-2 px-3 py-1 text-xs text-green-700 bg-green-100 rounded-full dark:bg-green-900/30 dark:text-green-300">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linecap="round"
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
                                                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
@@ -1517,7 +1527,7 @@ new class extends Component {
                                                     class="gap-2 text-xs" title="Cetak SEP">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linecap="round"
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
                                                             d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                                     </svg>
@@ -1525,13 +1535,13 @@ new class extends Component {
                                             @endif
                                         </div>
 
-                                        {{-- Info SEP ringkas jika sudah ada --}}
+                                        {{-- Info SEP aktif --}}
                                         @if (!empty($dataDaftarPoliRJ['sep']['noSep']))
                                             <div
                                                 class="flex items-center gap-2 px-3 py-2 mt-1 text-sm border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
                                                 <svg class="w-5 h-5 text-blue-500" fill="none"
                                                     stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linecap="round"
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2"
                                                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
@@ -1550,17 +1560,23 @@ new class extends Component {
                                             </div>
                                         @endif
 
-                                        {{-- Panggil komponen Livewire modal Vclaim --}}
+                                        {{-- Vclaim modal component --}}
                                         <livewire:pages::transaksi.rj.daftar-rj.vclaim-rj-actions :initialRjNo="$rjNo ?? null"
                                             wire:key="vclaim-rj-actions-{{ $rjNo ?? 'new' }}" />
 
+                                        {{-- No SEP — Ref: 5 → Enter ke tombol Simpan --}}
                                         <div class="grid">
                                             <x-input-label value="No SEP" />
                                             <x-text-input wire:model.live="dataDaftarPoliRJ.sep.noSep"
-                                                :disabled="$isFormLocked" />
+                                                :disabled="$isFormLocked" x-ref="inputNoSep"
+                                                x-on:keydown.enter.prevent="
+                                                    if (!$wire.isFormLocked)
+                                                        $nextTick(() => $refs.btnSimpan?.focus())
+                                                " />
                                             <x-input-error :messages="$errors->get('dataDaftarPoliRJ.sep.noSep')" class="mt-1" />
                                         </div>
                                     </div>
+
                                 @endif
                             </div>
 
@@ -1581,19 +1597,18 @@ new class extends Component {
                         <x-secondary-button wire:click="closeModal">
                             Batal
                         </x-secondary-button>
-                        <x-primary-button wire:click.prevent="save()" class="min-w-[120px]"
+
+                        {{-- Ref: 6 (tujuan akhir Enter) --}}
+                        <x-primary-button x-ref="btnSimpan" wire:click.prevent="save()" class="min-w-[120px]"
                             wire:loading.attr="disabled" :disabled="$isFormLocked">
-                            {{-- State normal (loading.remove) --}}
                             <span wire:loading.remove>
                                 <svg class="inline w-4 h-4 mr-1 -ml-1" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linecap="round" stroke-width="2"
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1-4l-4 4-4-4m4 4V4" />
                                 </svg>
                                 {{ $isFormLocked ? 'Read Only' : 'Simpan' }}
                             </span>
-
-                            {{-- LOADING STATE --}}
                             <span wire:loading>
                                 <x-loading />
                                 Menyimpan...
