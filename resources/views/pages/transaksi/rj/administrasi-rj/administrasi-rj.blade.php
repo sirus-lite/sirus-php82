@@ -318,6 +318,14 @@ new class extends Component {
     public function onAdministrasiUpdated(): void
     {
         $this->sumAll();
+
+        if ($this->checkRJStatus($this->rjNo)) {
+            $this->isFormLocked = true;
+            $this->incrementVersion('modal');
+        } else {
+            $this->isFormLocked = false;
+        }
+
         $this->dispatch('administrasi-obat-rj.updated');
         $this->dispatch('administrasi-lain-lain-rj.updated');
         $this->dispatch('administrasi-kasir-rj.updated');

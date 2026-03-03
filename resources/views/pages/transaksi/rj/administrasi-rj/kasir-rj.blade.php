@@ -272,8 +272,8 @@ new class extends Component {
         $msg = $this->txnStatus === 'L' ? 'Pembayaran lunas berhasil disimpan.' : 'Pembayaran sebagian (cicilan) berhasil disimpan.';
 
         $this->dispatch('toast', type: 'success', message: $msg);
-        $this->dispatch('kasir-rj.updated', rjNo: $this->rjNo);
-        $this->dispatch('refresh-after-rj.saved');
+
+        $this->dispatch('administrasi-rj.updated');
     }
 
     /* ═══════════════════════════════════════
@@ -326,8 +326,8 @@ new class extends Component {
         $this->incrementVersion('kasir-rj');
 
         $this->dispatch('toast', type: 'success', message: 'Transaksi berhasil dibatalkan.');
-        $this->dispatch('kasir-rj.updated', rjNo: $this->rjNo);
-        $this->dispatch('refresh-after-rj.saved');
+
+        $this->dispatch('administrasi-rj.updated');
     }
 
     /* ═══════════════════════════════════════
