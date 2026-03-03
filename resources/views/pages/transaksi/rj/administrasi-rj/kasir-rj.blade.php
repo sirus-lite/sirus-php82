@@ -333,6 +333,7 @@ new class extends Component {
     /* ═══════════════════════════════════════
      | LIFECYCLE
     ═══════════════════════════════════════ */
+    #[On('administrasi-kasir-rj.updated')]
     public function mount(): void
     {
         $this->registerAreas($this->renderAreas);

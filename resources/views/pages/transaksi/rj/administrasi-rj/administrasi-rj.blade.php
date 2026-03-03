@@ -49,14 +49,16 @@ new class extends Component {
         $this->resetValidation();
 
         $dataDaftarPoliRJ = $this->findDataRJ($rjNo);
-
         if (!$dataDaftarPoliRJ) {
             $this->dispatch('toast', type: 'error', message: 'Data Rawat Jalan tidak ditemukan.');
             return;
         }
 
         $this->dataDaftarPoliRJ = $dataDaftarPoliRJ;
-
+        $this->statusResep = [
+            'status' => $this->dataDaftarPoliRJ['statusResep']['status'] ?? 'DITUNGGU',
+            'keterangan' => $this->dataDaftarPoliRJ['statusResep']['keterangan'] ?? '',
+        ];
         if ($this->checkRJStatus($rjNo)) {
             $this->isFormLocked = true;
         }
@@ -207,21 +209,32 @@ new class extends Component {
     ═══════════════════════════════════════ */
     public function setSelesaiAdministrasiStatus(int $rjNo): void
     {
-        $data = $this->findData($rjNo);
+        try {
+            DB::transaction(function () use ($rjNo) {
+                // ✅ Ambil existing data (kalkulasi rs_admin, rj_admin, poli_price)
+                $data = $this->findData($rjNo);
 
-        if (isset($data['AdministrasiRj'])) {
-            $this->dispatch('toast', type: 'error', message: 'Administrasi sudah tersimpan oleh ' . $data['AdministrasiRj']['userLog']);
-            return;
+                // ✅ Guard: cegah duplikasi simpan
+                if (isset($data['AdministrasiRj'])) {
+                    $this->dispatch('toast', type: 'error', message: 'Administrasi sudah tersimpan oleh ' . $data['AdministrasiRj']['userLog']);
+                    return;
+                }
+
+                // ✅ Set key spesifik saja
+                $data['AdministrasiRj'] = [
+                    'userLog' => auth()->user()->myuser_name,
+                    'userLogDate' => Carbon::now(env('APP_TIMEZONE'))->format('d/m/Y H:i:s'),
+                ];
+
+                // ✅ Simpan
+                $this->updateJsonRJ($rjNo, $data);
+            });
+
+            $this->dispatch('toast', type: 'success', message: 'Administrasi berhasil disimpan.');
+            $this->sumAll();
+        } catch (\Exception $e) {
+            $this->dispatch('toast', type: 'error', message: 'Gagal menyimpan: ' . $e->getMessage());
         }
-
-        $data['AdministrasiRj'] = [
-            'userLog' => auth()->user()->myuser_name,
-            'userLogDate' => Carbon::now(env('APP_TIMEZONE'))->format('d/m/Y H:i:s'),
-        ];
-
-        $this->updateJsonRJ($rjNo, $data);
-        $this->dispatch('toast', type: 'success', message: 'Administrasi berhasil disimpan.');
-        $this->sumAll();
     }
 
     /* ═══════════════════════════════════════
@@ -242,17 +255,30 @@ new class extends Component {
         if (!$this->rjNo || empty($this->statusResep['status'])) {
             return;
         }
+        $status = $this->statusResep['status'];
+        $keterangan = $this->statusResep['keterangan'] ?? '';
 
-        $data = $this->findData($this->rjNo);
-        $data['statusResep'] = [
-            'status' => $this->statusResep['status'],
-            'keterangan' => $this->statusResep['keterangan'] ?? '',
-            'userLog' => auth()->user()->myuser_name,
-            'userLogDate' => Carbon::now(env('APP_TIMEZONE'))->format('d/m/Y H:i:s'),
-        ];
+        try {
+            DB::transaction(function () use ($status, $keterangan) {
+                $data = $this->findData($this->rjNo); // ← ini menimpa $this->statusResep
 
-        $this->updateJsonRJ($this->rjNo, $data);
-        $this->dispatch('toast', type: 'success', message: 'Status resep "' . $this->statusResep['status'] . '" disimpan.');
+                $data['statusResep'] = [
+                    'status' => $status, // ✅ pakai variable lokal
+                    'keterangan' => $keterangan,
+                    'userLog' => auth()->user()->myuser_name,
+                    'userLogDate' => Carbon::now(env('APP_TIMEZONE'))->format('d/m/Y H:i:s'),
+                ];
+                $this->updateJsonRJ($this->rjNo, $data);
+            });
+
+            $this->dispatch('toast', type: 'success', message: 'Status resep "' . $status . '" berhasil disimpan.');
+
+            if (!empty($keterangan)) {
+                $this->dispatch('toast', type: 'success', message: 'Keterangan "' . $keterangan . '" berhasil disimpan.');
+            }
+        } catch (\Exception $e) {
+            $this->dispatch('toast', type: 'error', message: 'Gagal menyimpan status resep: ' . $e->getMessage());
+        }
     }
 
     /* ═══════════════════════════════════════
@@ -266,6 +292,7 @@ new class extends Component {
         $this->sumAll();
         $this->dispatch('administrasi-obat-rj.updated');
         $this->dispatch('administrasi-lain-lain-rj.updated');
+        $this->dispatch('administrasi-kasir-rj.updated');
     }
 
     /* ═══════════════════════════════════════
@@ -340,20 +367,19 @@ new class extends Component {
             <div class="flex-1 px-4 py-4 overflow-y-auto bg-gray-50/70 dark:bg-gray-950/20">
                 <div class="max-w-full mx-auto space-y-4">
 
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-5 gap-3">
                         {{-- Info Pasien --}}
-                        <div
-                            class="col-span-1 p-4 bg-white border border-gray-200 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-700">
+                        <div class="col-span-3">
                             <livewire:pages::transaksi.rj.display-pasien-rj.display-pasien-rj :rjNo="$rjNo"
                                 wire:key="display-pasien-rj-{{ $rjNo }}" />
                         </div>
 
                         {{-- RINGKASAN BIAYA --}}
                         <div
-                            class="col-span-1 p-4 border border-gray-200 rounded-2xl dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
+                            class="col-span-2 row-span-2 p-2 border border-gray-200 rounded-2xl dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
                             <div class="flex items-start justify-between gap-4">
 
-                                <div class="grid flex-1 grid-cols-3 gap-2">
+                                <div class="grid flex-1 grid-cols-2 gap-2">
                                     @foreach ([['label' => 'RS Admin', 'value' => $sumRsAdmin], ['label' => 'Admin OB', 'value' => $sumRjAdmin], ['label' => 'Uang Periksa', 'value' => $sumPoliPrice], ['label' => 'Jasa Karyawan', 'value' => $sumJasaKaryawan], ['label' => 'Jasa Dokter', 'value' => $sumJasaDokter], ['label' => 'Jasa Medis', 'value' => $sumJasaMedis], ['label' => 'Obat', 'value' => $sumObat], ['label' => 'Laboratorium', 'value' => $sumLaboratorium], ['label' => 'Radiologi', 'value' => $sumRadiologi], ['label' => 'Lain-Lain', 'value' => $sumLainLain]] as $item)
                                         <div
                                             class="px-3 py-2 bg-white border border-gray-200 rounded-xl dark:bg-gray-900 dark:border-gray-700">
@@ -382,91 +408,99 @@ new class extends Component {
 
                             </div>
                         </div>
-                    </div>
 
-                    {{-- SUB-TAB --}}
-                    <div x-data="{ tab: @entangle('activeTabAdministrasi') }"
-                        class="overflow-hidden bg-white border border-gray-200 rounded-2xl dark:border-gray-700 dark:bg-gray-900">
+                        {{-- SUB-TAB --}}
+                        <div x-data="{ tab: @entangle('activeTabAdministrasi') }"
+                            class="col-span-3 overflow-hidden bg-white border border-gray-200 rounded-2xl dark:border-gray-700 dark:bg-gray-900">
 
-                        <div class="flex flex-wrap px-4 pt-3 pb-0 border-b border-gray-200 dark:border-gray-700">
-                            @foreach ($EmrMenuAdministrasi as $menu)
-                                <button type="button" x-on:click="tab = '{{ $menu['ermMenuId'] }}'"
-                                    x-bind:class="tab === '{{ $menu['ermMenuId'] }}'
-                                        ?
-                                        'border-b-2 border-brand-green text-brand-green dark:border-brand-lime dark:text-brand-lime font-semibold bg-brand-green/5 dark:bg-brand-lime/5' :
-                                        'border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'"
-                                    class="px-4 py-2.5 -mb-px text-sm transition-all whitespace-nowrap rounded-t-lg">
-                                    {{ $menu['ermMenuName'] }}
-                                </button>
-                            @endforeach
+                            <div class="flex flex-wrap p-2 border-b border-gray-200 dark:border-gray-700">
+                                @foreach ($EmrMenuAdministrasi as $menu)
+                                    <button type="button" x-on:click="tab = '{{ $menu['ermMenuId'] }}'"
+                                        x-bind:class="tab === '{{ $menu['ermMenuId'] }}'
+                                            ?
+                                            'border-b-2 border-brand-green text-brand-green dark:border-brand-lime dark:text-brand-lime font-semibold bg-brand-green/5 dark:bg-brand-lime/5' :
+                                            'border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'"
+                                        class="px-4 py-2.5 -mb-px text-sm transition-all whitespace-nowrap rounded-t-lg">
+                                        {{ $menu['ermMenuName'] }}
+                                    </button>
+                                @endforeach
+                            </div>
+
+                            <div class="p-4 min-h-[300px]">
+
+                                <div x-show="tab === 'JasaKaryawan'" x-cloak
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0">
+                                    <livewire:pages::transaksi.rj.administrasi-rj.jasa-karyawan-rj :rjNo="$rjNo"
+                                        wire:key="tab-jasa-karyawan-{{ $rjNo }}" />
+                                </div>
+
+                                <div x-show="tab === 'JasaDokter'" x-cloak
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0">
+                                    <livewire:pages::transaksi.rj.administrasi-rj.jasa-dokter-rj :rjNo="$rjNo"
+                                        wire:key="tab-jasa-dokter-{{ $rjNo }}" />
+                                </div>
+
+                                <div x-show="tab === 'JasaMedis'" x-cloak
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0">
+                                    <livewire:pages::transaksi.rj.administrasi-rj.jasa-medis-rj :rjNo="$rjNo"
+                                        wire:key="tab-jasa-medis-{{ $rjNo }}" />
+                                </div>
+
+                                <div x-show="tab === 'Obat'" x-cloak
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0">
+                                    <livewire:pages::transaksi.rj.administrasi-rj.obat-rj :rjNo="$rjNo"
+                                        wire:key="tab-obat-{{ $rjNo }}" />
+                                </div>
+
+                                <div x-show="tab === 'Laboratorium'" x-cloak
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0">
+                                    <livewire:pages::transaksi.rj.administrasi-rj.laboratorium-rj :rjNo="$rjNo"
+                                        wire:key="tab-laboratorium-{{ $rjNo }}" />
+                                </div>
+
+                                <div x-show="tab === 'Radiologi'" x-cloak
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0">
+                                    <livewire:pages::transaksi.rj.administrasi-rj.radiologi-rj :rjNo="$rjNo"
+                                        wire:key="tab-radiologi-{{ $rjNo }}" />
+                                </div>
+
+                                <div x-show="tab === 'LainLain'" x-cloak
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0">
+                                    <livewire:pages::transaksi.rj.administrasi-rj.lain-lain-rj :rjNo="$rjNo"
+                                        wire:key="tab-lain-lain-{{ $rjNo }}" />
+                                </div>
+
+                                <div x-show="tab === 'Kasir'" x-cloak
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0">
+                                    <livewire:pages::transaksi.rj.administrasi-rj.kasir-rj :rjNo="$rjNo"
+                                        wire:key="tab-kasir-{{ $rjNo }}" />
+                                </div>
+
+                            </div>
                         </div>
 
-                        <div class="p-4 min-h-[300px]">
 
-                            <div x-show="tab === 'JasaKaryawan'" x-cloak
-                                x-transition:enter="transition ease-out duration-150"
-                                x-transition:enter-start="opacity-0 translate-y-1"
-                                x-transition:enter-end="opacity-100 translate-y-0">
-                                <livewire:pages::transaksi.rj.administrasi-rj.jasa-karyawan-rj :rjNo="$rjNo"
-                                    wire:key="tab-jasa-karyawan-{{ $rjNo }}" />
-                            </div>
 
-                            <div x-show="tab === 'JasaDokter'" x-cloak
-                                x-transition:enter="transition ease-out duration-150"
-                                x-transition:enter-start="opacity-0 translate-y-1"
-                                x-transition:enter-end="opacity-100 translate-y-0">
-                                <livewire:pages::transaksi.rj.administrasi-rj.jasa-dokter-rj :rjNo="$rjNo"
-                                    wire:key="tab-jasa-dokter-{{ $rjNo }}" />
-                            </div>
 
-                            <div x-show="tab === 'JasaMedis'" x-cloak
-                                x-transition:enter="transition ease-out duration-150"
-                                x-transition:enter-start="opacity-0 translate-y-1"
-                                x-transition:enter-end="opacity-100 translate-y-0">
-                                <livewire:pages::transaksi.rj.administrasi-rj.jasa-medis-rj :rjNo="$rjNo"
-                                    wire:key="tab-jasa-medis-{{ $rjNo }}" />
-                            </div>
-
-                            <div x-show="tab === 'Obat'" x-cloak x-transition:enter="transition ease-out duration-150"
-                                x-transition:enter-start="opacity-0 translate-y-1"
-                                x-transition:enter-end="opacity-100 translate-y-0">
-                                <livewire:pages::transaksi.rj.administrasi-rj.obat-rj :rjNo="$rjNo"
-                                    wire:key="tab-obat-{{ $rjNo }}" />
-                            </div>
-
-                            <div x-show="tab === 'Laboratorium'" x-cloak
-                                x-transition:enter="transition ease-out duration-150"
-                                x-transition:enter-start="opacity-0 translate-y-1"
-                                x-transition:enter-end="opacity-100 translate-y-0">
-                                <livewire:pages::transaksi.rj.administrasi-rj.laboratorium-rj :rjNo="$rjNo"
-                                    wire:key="tab-laboratorium-{{ $rjNo }}" />
-                            </div>
-
-                            <div x-show="tab === 'Radiologi'" x-cloak
-                                x-transition:enter="transition ease-out duration-150"
-                                x-transition:enter-start="opacity-0 translate-y-1"
-                                x-transition:enter-end="opacity-100 translate-y-0">
-                                <livewire:pages::transaksi.rj.administrasi-rj.radiologi-rj :rjNo="$rjNo"
-                                    wire:key="tab-radiologi-{{ $rjNo }}" />
-                            </div>
-
-                            <div x-show="tab === 'LainLain'" x-cloak
-                                x-transition:enter="transition ease-out duration-150"
-                                x-transition:enter-start="opacity-0 translate-y-1"
-                                x-transition:enter-end="opacity-100 translate-y-0">
-                                <livewire:pages::transaksi.rj.administrasi-rj.lain-lain-rj :rjNo="$rjNo"
-                                    wire:key="tab-lain-lain-{{ $rjNo }}" />
-                            </div>
-
-                            <div x-show="tab === 'Kasir'" x-cloak x-transition:enter="transition ease-out duration-150"
-                                x-transition:enter-start="opacity-0 translate-y-1"
-                                x-transition:enter-end="opacity-100 translate-y-0">
-                                <livewire:pages::transaksi.rj.administrasi-rj.kasir-rj :rjNo="$rjNo"
-                                    wire:key="tab-kasir-{{ $rjNo }}" />
-                            </div>
-
-                        </div>
                     </div>
+
+
 
                     {{-- STATUS RESEP + SELESAI --}}
                     <div
@@ -491,23 +525,40 @@ new class extends Component {
                         </div>
 
                         <div class="flex-shrink-0">
-                            <button type="button"
-                                wire:click.prevent="setSelesaiAdministrasiStatus({{ $rjNo }})"
-                                wire:loading.attr="disabled" wire:target="setSelesaiAdministrasiStatus"
-                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-                                       text-white shadow-sm transition
-                                       bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60">
-                                <span wire:loading.remove wire:target="setSelesaiAdministrasiStatus">
+                            @if (isset($dataDaftarPoliRJ['AdministrasiRj']))
+                                <div
+                                    class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                text-emerald-700 dark:text-emerald-400
+                bg-emerald-50 dark:bg-emerald-900/20
+                border border-emerald-200 dark:border-emerald-800">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                </span>
-                                <span wire:loading wire:target="setSelesaiAdministrasiStatus">
-                                    <x-loading class="w-4 h-4" />
-                                </span>
-                                Administrasi Selesai
-                            </button>
+                                    <span>Selesai oleh
+                                        <strong>{{ $dataDaftarPoliRJ['AdministrasiRj']['userLog'] }}</strong></span>
+                                    <span class="text-xs font-normal text-emerald-500 dark:text-emerald-400">
+                                        {{ $dataDaftarPoliRJ['AdministrasiRj']['userLogDate'] }}
+                                    </span>
+                                </div>
+                            @else
+                                <x-primary-button type="button"
+                                    wire:click.prevent="setSelesaiAdministrasiStatus({{ $rjNo }})"
+                                    wire:loading.attr="disabled" wire:target="setSelesaiAdministrasiStatus"
+                                    class="gap-2">
+                                    <span wire:loading.remove wire:target="setSelesaiAdministrasiStatus">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </span>
+                                    <span wire:loading wire:target="setSelesaiAdministrasiStatus">
+                                        <x-loading class="w-4 h-4" />
+                                    </span>
+                                    Administrasi Selesai
+                                </x-primary-button>
+                            @endif
                         </div>
 
                     </div>
