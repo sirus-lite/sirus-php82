@@ -293,7 +293,19 @@ new class extends Component {
 
     public function saveAdminPrices(): void
     {
+        if (!$this->rjNo) {
+            return;
+        }
+
         try {
+            // ✅ Ambil nilai saat ini dari DB
+            $hdr = DB::table('rstxn_rjhdrs')->select('rs_admin', 'rj_admin', 'poli_price')->where('rj_no', $this->rjNo)->first();
+
+            // ✅ Jika tidak ada perubahan, skip update
+            if ((int) $hdr->rs_admin === $this->editRsAdmin && (int) $hdr->rj_admin === $this->editRjAdmin && (int) $hdr->poli_price === $this->editPoliPrice) {
+                return;
+            }
+
             DB::table('rstxn_rjhdrs')
                 ->where('rj_no', $this->rjNo)
                 ->update([
