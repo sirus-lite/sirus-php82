@@ -353,11 +353,35 @@ new class extends Component {
 
                     {{-- Tombol Save --}}
                     @if (!$isFormLocked)
+                        @php
+                            $klaimStatus = $dataDaftarPoliRJ['klaimStatus'] ?? '';
+                            $klaimId = $dataDaftarPoliRJ['klaimId'] ?? '';
+                            $isBPJS = $klaimStatus === 'BPJS' || $klaimId === 'JM';
+                        @endphp
                         <div class="flex justify-end pt-2">
-                            <x-primary-button type="button" wire:click="save" wire:loading.attr="disabled">
-                                <span wire:loading.remove>Simpan Kontrol</span>
-                                <span wire:loading>Saving...</span>
-                            </x-primary-button>
+                            <x-success-button type="button" wire:click="save" wire:loading.attr="disabled">
+                                <span wire:loading.remove wire:target="save" class="inline-flex items-center gap-2">
+                                    @if ($isBPJS)
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                            stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                        </svg>
+                                        Simpan & Kirim SKDP ke BPJS
+                                    @else
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                            stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Simpan Surat Kontrol
+                                    @endif
+                                </span>
+                                <span wire:loading wire:target="save" class="inline-flex items-center gap-2">
+                                    <x-loading />
+                                    {{ $isBPJS ? 'Mengirim ke BPJS...' : 'Menyimpan...' }}
+                                </span>
+                            </x-success-button>
                         </div>
                     @endif
                 @endif

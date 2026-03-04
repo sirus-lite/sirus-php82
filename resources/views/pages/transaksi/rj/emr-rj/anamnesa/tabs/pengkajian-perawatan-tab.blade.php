@@ -11,16 +11,24 @@
                 wire:model.live="dataDaftarPoliRJ.anamnesa.pengkajianPerawatan.jamDatang" />
 
             @if (!$dataDaftarPoliRJ['anamnesa']['pengkajianPerawatan']['jamDatang'])
-                <div class="grid grid-cols-1">
-                    <div wire:loading wire:target="setJamDatang">
-                        <x-loading />
-                    </div>
-                    <x-primary-button :disabled="false"
-                        wire:click.prevent="setJamDatang('{{ \Carbon\Carbon::now()->format('d/m/Y H:i:s') }}')"
-                        type="button" wire:loading.remove>
+                <x-outline-button type="button" class="justify-center w-full"
+                    wire:click.prevent="setJamDatang('{{ \Carbon\Carbon::now()->format('d/m/Y H:i:s') }}')"
+                    wire:loading.attr="disabled" wire:target="setJamDatang">
+
+                    <span wire:loading.remove wire:target="setJamDatang" class="inline-flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                         Set Jam Datang
-                    </x-primary-button>
-                </div>
+                    </span>
+
+                    <span wire:loading wire:target="setJamDatang" class="inline-flex items-center gap-2">
+                        <x-loading />
+                        Menyimpan...
+                    </span>
+
+                </x-outline-button>
             @endif
         </div>
 
@@ -39,15 +47,23 @@
                 class="mt-1 " :errorshas="__($errors->has('dataDaftarPoliRJ.anamnesa.pengkajianPerawatan.perawatPenerima'))" :disabled="true"
                 wire:model.live="dataDaftarPoliRJ.anamnesa.pengkajianPerawatan.perawatPenerima" />
 
-            <div class="grid grid-cols-1">
-                <div wire:loading wire:target="setPerawatPenerima">
+            <x-outline-button type="button" class="justify-center w-full" wire:click.prevent="setPerawatPenerima()"
+                wire:loading.attr="disabled" wire:target="setPerawatPenerima">
+
+                <span wire:loading.remove wire:target="setPerawatPenerima" class="inline-flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                    Ttd Perawat
+                </span>
+
+                <span wire:loading wire:target="setPerawatPenerima" class="inline-flex items-center gap-2">
                     <x-loading />
-                </div>
-                <x-primary-button :disabled="false" wire:click.prevent="setPerawatPenerima()" type="button"
-                    wire:loading.remove>
-                    ttd Perawat
-                </x-primary-button>
-            </div>
+                    Menyimpan...
+                </span>
+
+            </x-outline-button>
         </div>
 
         {{-- Error untuk Perawat Penerima --}}

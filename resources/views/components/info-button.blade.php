@@ -1,25 +1,24 @@
 @props([
-    'type' => 'submit',
+    'type' => 'button',
     'disabled' => false,
 ])
 
 <button type="{{ $type }}" {{ $disabled ? 'disabled' : '' }}
     {{ $attributes->class([
-        // layout — Flowbite: px-5 py-2.5 rounded-lg text-sm font-medium
         'inline-flex items-center justify-center gap-2',
         'px-5 py-2.5 rounded-lg',
         'text-sm font-medium',
         'transition-colors duration-150',
     
-        // light mode
-        'text-white bg-brand-green',
-        'hover:bg-brand-green/90',
-        'focus:outline-none focus:ring-4 focus:ring-brand-lime/40',
+        // light mode — blue solid
+        'text-white bg-blue-600',
+        'hover:bg-blue-700',
+        'focus:outline-none focus:ring-4 focus:ring-blue-300',
     
         // dark mode
-        'dark:bg-brand-lime dark:text-gray-900',
-        'dark:hover:bg-brand-lime/90',
-        'dark:focus:ring-brand-green/40',
+        'dark:bg-blue-600',
+        'dark:hover:bg-blue-700',
+        'dark:focus:ring-blue-900',
     
         // disabled
         'disabled:opacity-50',
