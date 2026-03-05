@@ -180,6 +180,19 @@ new class extends Component {
     {
         $this->registerAreas(['modal-suket-rj']);
     }
+
+    /* ===============================
+ | CETAK SUKET
+ =============================== */
+    public function cetakSuketSehat(): void
+    {
+        $this->dispatch('cetak-suket-sehat.open', rjNo: $this->rjNo);
+    }
+
+    public function cetakSuketSakit(): void
+    {
+        $this->dispatch('cetak-suket-sakit.open', rjNo: $this->rjNo);
+    }
 };
 
 ?>
@@ -257,8 +270,10 @@ new class extends Component {
 
             </div>
         </div>
-
-
-
     </div>
+
+
+    {{-- di parent/modal — daftar sekali --}}
+    <livewire:pages::components.modul-dokumen.r-j.suket-sakit.cetak-suket-sakit wire:key="cetak-suket-sakit" />
+    <livewire:pages::components.modul-dokumen.r-j.suket-sehat.cetak-suket-sehat wire:key="cetak-suket-sehat" />
 </div>

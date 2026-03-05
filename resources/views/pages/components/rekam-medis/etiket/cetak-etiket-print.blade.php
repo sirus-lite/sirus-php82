@@ -1,30 +1,4 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="utf-8">
-    @php
-        $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
-        $pdfCss = $manifest['resources/css/app.css']['file'] ?? null;
-    @endphp
-
-    <style>
-        @page {
-            size: 6cm 4cm;
-            margin: 2mm;
-        }
-
-        body {
-            width: 56mm;
-            height: 36mm;
-            overflow: hidden;
-        }
-
-        {!! $pdfCss ? file_get_contents(public_path('build/' . $pdfCss)) : '' !!}
-    </style>
-</head>
-
-<body class="font-sans text-[7px]">
+<x-pdf.layout-etiket>
 
     {{-- HEADER --}}
     <table class="w-full pb-1 mb-1 border-b border-gray-400" cellpadding="0" cellspacing="0">
@@ -100,6 +74,4 @@
         {!! DNS1D::getBarcodeHTML($regNo, 'C39', 0.75, 16, 'black', false) !!}
     </div>
 
-</body>
-
-</html>
+</x-pdf.layout-etiket>
