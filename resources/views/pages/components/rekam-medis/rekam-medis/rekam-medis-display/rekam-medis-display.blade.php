@@ -519,40 +519,44 @@ new class extends Component {
                                                         <div class="grid grid-cols-2 gap-2 mt-3">
                                                             <div class="grid grid-cols-1 gap-2">
                                                                 @if ($isRJ)
-                                                                    <x-primary-button type="button"
-                                                                        wire:click="copyResep('{{ $myQData->txn_no }}','{{ $myQData->layanan_status }}')"
-                                                                        class="text-sm px-3 py-1.5">
-                                                                        <svg class="w-4 h-4 mr-1" fill="none"
-                                                                            stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round" stroke-width="2"
-                                                                                d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                                                                        </svg>
-                                                                        Copy Resep
-                                                                    </x-primary-button>
-
-                                                                    <x-primary-button type="button"
-                                                                        wire:click="OpenRekamMedisRj('{{ $myQData->txn_no }}')"
-                                                                        wire:loading.attr="disabled"
-                                                                        wire:target="OpenRekamMedisRj('{{ $myQData->txn_no }}')">
-                                                                        <span wire:loading.remove
-                                                                            wire:target="OpenRekamMedisRj('{{ $myQData->txn_no }}')"
-                                                                            class="flex items-center gap-1">
-                                                                            <svg class="w-4 h-4" fill="none"
+                                                                    <div class="grid grid-cols-2 gap-2">
+                                                                        <x-primary-button type="button"
+                                                                            wire:click="copyResep('{{ $myQData->txn_no }}','{{ $myQData->layanan_status }}')"
+                                                                            class="text-sm px-3 py-1.5">
+                                                                            <svg class="w-4 h-4 mr-1" fill="none"
                                                                                 stroke="currentColor" viewBox="0 0 24 24">
                                                                                 <path stroke-linecap="round"
                                                                                     stroke-linejoin="round" stroke-width="2"
-                                                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                                                                             </svg>
-                                                                            Buka Resume Medis
-                                                                        </span>
-                                                                        <span wire:loading
-                                                                            wire:target="OpenRekamMedisRj('{{ $myQData->txn_no }}')"
-                                                                            class="flex items-center gap-1">
-                                                                            <x-loading />
-                                                                            Memuat...
-                                                                        </span>
-                                                                    </x-primary-button>
+                                                                            Copy Resep
+                                                                        </x-primary-button>
+
+                                                                        <x-info-button type="button"
+                                                                            wire:click="OpenRekamMedisRj('{{ $myQData->txn_no }}')"
+                                                                            wire:loading.attr="disabled"
+                                                                            wire:target="OpenRekamMedisRj('{{ $myQData->txn_no }}')">
+                                                                            <span wire:loading.remove
+                                                                                wire:target="OpenRekamMedisRj('{{ $myQData->txn_no }}')"
+                                                                                class="flex items-center gap-1">
+                                                                                <svg class="w-4 h-4" fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round"
+                                                                                        stroke-linejoin="round"
+                                                                                        stroke-width="2"
+                                                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                                </svg>
+                                                                                Resume Medis
+                                                                            </span>
+                                                                            <span wire:loading
+                                                                                wire:target="OpenRekamMedisRj('{{ $myQData->txn_no }}')"
+                                                                                class="flex items-center gap-1">
+                                                                                <x-loading />
+                                                                                Memuat...
+                                                                            </span>
+                                                                        </x-info-button>
+                                                                    </div>
                                                                 @endif
 
                                                                 @if (!empty($datadaftar_json['sep']['noSep']))
