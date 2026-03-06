@@ -54,7 +54,7 @@
                     {{ $full }}
                 </td>
             </tr>
-            <tr>
+            {{-- <tr>
                 <td class="py-0.5 text-[11px] text-gray-500 whitespace-nowrap">NIK</td>
                 <td class="py-0.5 text-[11px] px-1">:</td>
                 <td class="py-0.5 text-[11px]">{{ $data['identitas']['nik'] ?? '-' }}</td>
@@ -63,7 +63,7 @@
                 <td class="py-0.5 text-[11px] text-gray-500 whitespace-nowrap">Id BPJS</td>
                 <td class="py-0.5 text-[11px] px-1">:</td>
                 <td class="py-0.5 text-[11px]">{{ $data['identitas']['idbpjs'] ?? '-' }}</td>
-            </tr>
+            </tr> --}}
         </table>
     </x-slot>
 
