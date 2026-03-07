@@ -39,7 +39,7 @@ new class extends Component {
         // $this->dataDaftarPoliRJ = $this->findRekamMedisPerawat($rjNo);
 
         // Cek status lock
-        if ($this->checkRJStatus($rjNo)) {
+        if ($this->checkEmrRJStatus($rjNo)) {
             $this->isFormLocked = true;
         }
 

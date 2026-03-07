@@ -2,20 +2,11 @@
     <div class="pt-0">
         {{-- Lab --}}
         <div class="mb-4">
-            <div class="grid grid-cols-1 ml-2">
-                <div wire:loading wire:target="pemeriksaanLaboratorium">
-                    <x-loading />
-                </div>
-
-                <x-primary-button :disabled="$isFormLocked" wire:click.prevent="pemeriksaanLaboratorium()" type="button"
-                    wire:loading.remove>
-                    Pemeriksaan Laboratorium
-                </x-primary-button>
+            <div>
+                <livewire:pages::transaksi.rj.emr-rj.pemeriksaan.penunjang.laborat.rm-laborat-rj-actions
+                    :rjNo="$dataDaftarPoliRJ['rjNo'] ?? ''" :disabled="$isFormLocked"
+                    wire:key="laborat-actions-{{ $dataDaftarPoliRJ['rjNo'] ?? 'new' }}" />
             </div>
-
-            {{-- @if ($isOpenLaboratorium)
-                @include('livewire.emr-r-j.mr-r-j.pemeriksaan.create-penunjang-laboratorium')
-            @endif --}}
 
             <table class="w-full text-sm text-left text-gray-500 table-auto">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-100">
@@ -67,20 +58,11 @@
 
         {{-- Rad --}}
         <div class="mb-4">
-            <div class="grid grid-cols-1 ml-2">
-                <div wire:loading wire:target="pemeriksaanRadiologi">
-                    <x-loading />
-                </div>
-
-                <x-primary-button :disabled="$isFormLocked" wire:click.prevent="pemeriksaanRadiologi()" type="button"
-                    wire:loading.remove>
-                    Pemeriksaan Radiologi
-                </x-primary-button>
+            <div>
+                <livewire:pages::transaksi.rj.emr-rj.pemeriksaan.penunjang.radiologi.rm-radiologi-rj-actions
+                    :rjNo="$dataDaftarPoliRJ['rjNo'] ?? ''" :disabled="$isFormLocked"
+                    wire:key="radiologi-actions-{{ $dataDaftarPoliRJ['rjNo'] ?? 'new' }}" />
             </div>
-            {{--
-            @if ($isOpenRadiologi)
-                @include('livewire.emr-r-j.mr-r-j.pemeriksaan.create-penunjang-radiologi')
-            @endif --}}
 
             <table class="w-full text-sm text-left text-gray-500 table-auto">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-100">
@@ -130,8 +112,6 @@
             </table>
         </div>
 
-        {{-- Lain --}}
-        <div>UPLOAD PELAYANNAN PENUNJANG</div>
-        {{-- @include('livewire.emr-r-j.mr-r-j.pemeriksaan.uploadpenunjangHasil') --}}
+
     </div>
 </div>

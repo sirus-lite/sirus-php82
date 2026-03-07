@@ -33,26 +33,31 @@ new class extends Component {
     public function updatedSearchKeyword(): void
     {
         $this->resetPage();
+        $this->incrementVersion('daftar-rj-toolbar');
     }
 
     public function updatedFilterStatus(): void
     {
         $this->resetPage();
+        $this->incrementVersion('daftar-rj-toolbar');
     }
 
     public function updatedFilterPoli(): void
     {
         $this->resetPage();
+        $this->incrementVersion('daftar-rj-toolbar');
     }
 
     public function updatedFilterDokter(): void
     {
         $this->resetPage();
+        $this->incrementVersion('daftar-rj-toolbar');
     }
 
     public function updatedItemsPerPage(): void
     {
         $this->resetPage();
+        $this->incrementVersion('daftar-rj-toolbar');
     }
 
     /* -------------------------

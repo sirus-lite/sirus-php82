@@ -330,7 +330,7 @@ new class extends Component {
             // NUTRISI
             'dataDaftarPoliRJ.pemeriksaan.nutrisi.bb' => 'required|numeric|min:0|max:300',
             'dataDaftarPoliRJ.pemeriksaan.nutrisi.tb' => 'required|numeric|min:0|max:300',
-            'dataDaftarPoliRJ.pemeriksaan.nutrisi.imt' => 'required|numeric|min:0|max:100',
+            'dataDaftarPoliRJ.pemeriksaan.nutrisi.imt' => 'required|numeric|min:0',
             'dataDaftarPoliRJ.pemeriksaan.nutrisi.lk' => 'nullable|numeric|min:0|max:100',
             'dataDaftarPoliRJ.pemeriksaan.nutrisi.lila' => 'nullable|numeric|min:0|max:100',
         ];
@@ -373,7 +373,6 @@ new class extends Component {
             'dataDaftarPoliRJ.pemeriksaan.nutrisi.imt.required' => ':attribute wajib diisi',
             'dataDaftarPoliRJ.pemeriksaan.nutrisi.imt.numeric' => ':attribute harus berupa angka',
             'dataDaftarPoliRJ.pemeriksaan.nutrisi.imt.min' => ':attribute tidak boleh kurang dari 0',
-            'dataDaftarPoliRJ.pemeriksaan.nutrisi.imt.max' => ':attribute tidak boleh lebih dari 100',
 
             'dataDaftarPoliRJ.pemeriksaan.nutrisi.lk.numeric' => ':attribute harus berupa angka',
             'dataDaftarPoliRJ.pemeriksaan.nutrisi.lk.min' => ':attribute tidak boleh kurang dari 0 cm',
@@ -520,6 +519,65 @@ new class extends Component {
     public function mount()
     {
         $this->registerAreas(['modal-pemeriksaan-rj']);
+    }
+
+    #[On('laborat-kirim-penunjang')]
+    public function terimaPenunjangLaborat(string $text): void
+    {
+        if ($this->isFormLocked) {
+            $this->dispatch('toast', type: 'error', message: 'Form dalam mode read-only, tidak dapat menyimpan data.');
+            return;
+        }
+
+        try {
+            DB::transaction(function () use ($text) {
+                // ✅ Ambil existing data dari DB
+                $data = $this->findDataRJ($this->rjNo) ?? [];
+
+                // ✅ Guard: jika data kosong, batalkan
+                if (empty($data)) {
+                    $this->dispatch('toast', type: 'error', message: 'Data RJ tidak ditemukan, simpan dibatalkan.');
+                    return;
+                }
+
+                // ✅ Append ke penunjang yang sudah ada, tidak overwrite key lain
+                $existing = $data['pemeriksaan']['penunjang'] ?? '';
+                $data['pemeriksaan']['penunjang'] = trim(($existing ? $existing . "\n" : '') . $text);
+                $this->updateJsonRJ($this->rjNo, $data);
+
+                // ✅ Sync ke property lokal agar UI ikut update
+                $this->dataDaftarPoliRJ['pemeriksaan']['penunjang'] = $data['pemeriksaan']['penunjang'];
+                // 🔥 INCREMENT: Refresh seluruh modal pemeriksaan
+                $this->incrementVersion('modal-pemeriksaan-rj');
+            });
+
+            $this->dispatch('toast', type: 'success', message: 'Data laboratorium berhasil dikirim ke Penunjang.');
+        } catch (\Exception $e) {
+            $this->dispatch('toast', type: 'error', message: 'Gagal mengirim ke Penunjang: ' . $e->getMessage());
+        }
+    }
+
+    #[On('laborat-order-terkirim')]
+    public function terimaLaboratOrder(): void
+    {
+        // Refresh data lokal dari DB agar tab Penunjang ikut update
+        $data = $this->findDataRJ($this->rjNo);
+        if ($data) {
+            $this->dataDaftarPoliRJ['pemeriksaan']['pemeriksaanPenunjang'] = $data['pemeriksaan']['pemeriksaanPenunjang'] ?? [];
+        }
+
+        $this->incrementVersion('modal-pemeriksaan-rj');
+    }
+
+    #[On('radiologi-order-terkirim')]
+    public function terimaRadiologiOrder(): void
+    {
+        // Refresh data lokal dari DB agar tab Penunjang ikut update
+        $data = $this->findDataRJ($this->rjNo);
+        if ($data) {
+            $this->dataDaftarPoliRJ['pemeriksaan']['pemeriksaanPenunjang'] = $data['pemeriksaan']['pemeriksaanPenunjang'] ?? [];
+        }
+        $this->incrementVersion('modal-pemeriksaan-rj');
     }
 };
 
