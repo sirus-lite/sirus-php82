@@ -74,11 +74,10 @@ new class extends Component {
             $uppercaseKeyword = mb_strtoupper($searchKeyword);
 
             $queryBuilder->where(function ($subQuery) use ($uppercaseKeyword, $searchKeyword) {
-                if (ctype_digit($searchKeyword)) {
-                    $subQuery->orWhere('reg_no', $searchKeyword)->orWhere('nik_bpjs', $searchKeyword);
-                }
-
                 $subQuery
+                    ->orWhereRaw('UPPER(reg_no) LIKE ?', ["%{$uppercaseKeyword}%"])
+                    ->orWhereRaw('UPPER(nik_bpjs) LIKE ?', ["%{$uppercaseKeyword}%"])
+                    ->orWhereRaw('UPPER(nokartu_bpjs) LIKE ?', ["%{$uppercaseKeyword}%"])
                     ->orWhereRaw('UPPER(reg_name) LIKE ?', ["%{$uppercaseKeyword}%"])
                     ->orWhereRaw('UPPER(address) LIKE ?', ["%{$uppercaseKeyword}%"])
                     ->orWhereRaw('UPPER(phone) LIKE ?', ["%{$uppercaseKeyword}%"]);
@@ -123,8 +122,18 @@ new class extends Component {
                             placeholder="Cari nama/NRM/NIK..." class="block w-full" />
                     </div>
 
+
+
                     {{-- RIGHT ACTIONS --}}
                     <div class="flex items-center justify-end gap-2">
+                        <div>
+                            <a href="{{ route('rawat-jalan.daftar') }}" wire:navigate>
+                                <x-primary-button type="button">
+                                    Daftar RJ
+                                </x-primary-button>
+                            </a>
+                        </div>
+
                         <div class="w-28">
                             <x-input-label for="itemsPerPage" value="Per halaman" class="sr-only" />
                             <x-select-input id="itemsPerPage" wire:model.live="itemsPerPage">
@@ -246,7 +255,7 @@ new class extends Component {
                 </div>
 
                 {{-- Child actions component --}}
-                <livewire:pages::master.master-pasien.master-pasien-actions :wire:key="'master-pasien-actions'" />
+                <livewire:pages::master.master-pasien.master-pasien-actions wire:key="master-pasien-actions" />
 
             </div>
         </div>
