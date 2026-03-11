@@ -33,13 +33,6 @@ new class extends Component {
                 'badge' => 'Master',
             ],
             [
-                'title' => 'Master Pasien',
-                'desc' => 'Kelola data pasien & ruangan',
-                'href' => route('master.pasien'),
-                'roles' => ['admin'], // ✅ wajib lowercase
-                'badge' => 'Master',
-            ],
-            [
                 'title' => 'Master Obat',
                 'desc' => 'Kelola data obat & ruangan',
                 'href' => route('master.obat'),
@@ -68,6 +61,13 @@ new class extends Component {
                 'roles' => ['admin'], // ✅ wajib lowercase
                 'badge' => 'Master',
             ],
+            [
+                'title' => 'Master Pasien',
+                'desc' => 'Kelola data pasien & ruangan',
+                'href' => route('master.pasien'),
+                'roles' => ['admin', 'mr'], // ✅ wajib lowercase
+                'badge' => 'Master',
+            ],
             // ===========================================
             // RAWAT JALAN (RJ) - DAFTAR RAWAT JALAN
             // ===========================================
@@ -75,7 +75,7 @@ new class extends Component {
                 'title' => 'Daftar Rawat Jalan',
                 'desc' => 'Pendaftaran & manajemen pasien rawat jalan',
                 'href' => route('rawat-jalan.daftar'),
-                'roles' => ['admin', 'pendaftaran'],
+                'roles' => ['admin', 'mr'],
                 'badge' => 'RJ',
             ],
             // ===========================================
