@@ -754,7 +754,7 @@ new class extends Component {
                                             </li>
 
                                             {{-- FISIK TAB --}}
-                                            <li class="mr-2">
+                                            {{-- <li class="mr-2">
                                                 <label
                                                     class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer hover:text-gray-600 hover:border-gray-300"
                                                     :class="activeTab === 'Fisik' ?
@@ -762,7 +762,7 @@ new class extends Component {
                                                     @click="activeTab ='Fisik'">
                                                     Fisik
                                                 </label>
-                                            </li>
+                                            </li> --}}
 
                                             {{-- ANATOMI TAB --}}
                                             <li class="mr-2">
@@ -776,7 +776,7 @@ new class extends Component {
                                             </li>
 
                                             {{-- UJI FUNGSI TAB --}}
-                                            <li class="mr-2">
+                                            {{-- <li class="mr-2">
                                                 <label
                                                     class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer hover:text-gray-600 hover:border-gray-300"
                                                     :class="activeTab === 'UjiFungsi' ?
@@ -784,10 +784,10 @@ new class extends Component {
                                                     @click="activeTab ='UjiFungsi'">
                                                     Uji Fungsi
                                                 </label>
-                                            </li>
+                                            </li> --}}
 
                                             {{-- PENUNJANG TAB --}}
-                                            <li class="mr-2">
+                                            {{-- <li class="mr-2">
                                                 <label
                                                     class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer hover:text-gray-600 hover:border-gray-300"
                                                     :class="activeTab === 'Penunjang' ?
@@ -795,7 +795,7 @@ new class extends Component {
                                                     @click="activeTab ='Penunjang'">
                                                     Penunjang
                                                 </label>
-                                            </li>
+                                            </li> --}}
 
                                             {{-- PELAYANAN PENUNJANG TAB --}}
                                             <li class="mr-2">

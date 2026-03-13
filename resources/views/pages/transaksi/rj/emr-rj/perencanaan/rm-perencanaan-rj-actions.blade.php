@@ -250,28 +250,6 @@ new class extends Component {
     }
 
     /* ===============================
-     | SET WAKTU PEMERIKSAAN
-     =============================== */
-    public function setWaktuPemeriksaan($time): void
-    {
-        if (!$this->isFormLocked) {
-            $this->dataDaftarPoliRJ['perencanaan']['pengkajianMedis']['waktuPemeriksaan'] = $time;
-            $this->incrementVersion('modal-perencanaan-rj');
-        }
-    }
-
-    /* ===============================
-     | SET SELESAI PEMERIKSAAN
-     =============================== */
-    public function setSelesaiPemeriksaan($time): void
-    {
-        if (!$this->isFormLocked) {
-            $this->dataDaftarPoliRJ['perencanaan']['pengkajianMedis']['selesaiPemeriksaan'] = $time;
-            $this->incrementVersion('modal-perencanaan-rj');
-        }
-    }
-
-    /* ===============================
      | VALIDASI SEBELUM DOKTER TTD
      =============================== */
     private function validateBeforeDrPemeriksa(): void
@@ -317,6 +295,16 @@ new class extends Component {
                     $drDesc = $this->dataDaftarPoliRJ['drDesc'] ?? 'Dokter Pemeriksa';
 
                     $this->dataDaftarPoliRJ['perencanaan']['pengkajianMedis']['drPemeriksa'] = $drDesc;
+
+                    // ✅ Auto-isi waktu pemeriksaan jika belum diisi (fallback jika tidak ada resep)
+                    if (empty($this->dataDaftarPoliRJ['perencanaan']['pengkajianMedis']['waktuPemeriksaan'])) {
+                        $this->dataDaftarPoliRJ['perencanaan']['pengkajianMedis']['waktuPemeriksaan'] = now()->format('d/m/Y H:i:s');
+                    }
+
+                    // ✅ Auto-isi selesai pemeriksaan jika belum diisi
+                    if (empty($this->dataDaftarPoliRJ['perencanaan']['pengkajianMedis']['selesaiPemeriksaan'])) {
+                        $this->dataDaftarPoliRJ['perencanaan']['pengkajianMedis']['selesaiPemeriksaan'] = now()->format('d/m/Y H:i:s');
+                    }
 
                     // Update status ERM
                     $this->dataDaftarPoliRJ['ermStatus'] = 'L';
@@ -367,6 +355,12 @@ new class extends Component {
     public function simpanTerapi(): void
     {
         $this->generateTerapiFromResep();
+
+        // ✅ Auto-isi waktu pemeriksaan saat simpan terapi (hanya jika belum diisi)
+        if (empty($this->dataDaftarPoliRJ['perencanaan']['pengkajianMedis']['waktuPemeriksaan'])) {
+            $this->dataDaftarPoliRJ['perencanaan']['pengkajianMedis']['waktuPemeriksaan'] = now()->format('d/m/Y H:i:s');
+        }
+
         $this->save();
         $this->closeModalEresepRJ();
     }
@@ -444,7 +438,7 @@ new class extends Component {
                                     </li>
 
                                     {{-- TERAPI TAB --}}
-                                    <li class="mr-2">
+                                    {{-- <li class="mr-2">
                                         <label
                                             class="inline-block px-4 py-2 border-b-2 border-transparent rounded-t-lg cursor-pointer hover:text-gray-600 hover:border-gray-300"
                                             :class="activeTab === '{{ $dataDaftarPoliRJ['perencanaan']['terapiTab'] ?? 'Terapi' }}'
@@ -453,7 +447,7 @@ new class extends Component {
                                             @click="activeTab ='{{ $dataDaftarPoliRJ['perencanaan']['terapiTab'] ?? 'Terapi' }}'">
                                             {{ $dataDaftarPoliRJ['perencanaan']['terapiTab'] ?? 'Terapi' }}
                                         </label>
-                                    </li>
+                                    </li> --}}
 
                                     {{-- RAWAT INAP TAB --}}
                                     {{-- <li class="mr-2">
@@ -496,10 +490,10 @@ new class extends Component {
                                 </div>
 
                                 {{-- TERAPI TAB --}}
-                                <div class="w-full"
+                                {{-- <div class="w-full"
                                     x-show.transition.in.opacity.duration.600="activeTab === '{{ $dataDaftarPoliRJ['perencanaan']['terapiTab'] ?? 'Terapi' }}'">
                                     @include('pages.transaksi.rj.emr-rj.perencanaan.tabs.terapi-tab')
-                                </div>
+                                </div> --}}
 
                                 {{-- RAWAT INAP TAB --}}
                                 {{-- @if (isset($dataDaftarPoliRJ['perencanaan']['rawatInapTab']))

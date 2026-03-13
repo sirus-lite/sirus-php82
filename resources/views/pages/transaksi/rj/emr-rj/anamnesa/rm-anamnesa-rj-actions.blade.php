@@ -372,23 +372,16 @@ new class extends Component {
         if (auth()->user()->hasRole('Perawat')) {
             $this->dataDaftarPoliRJ['anamnesa']['pengkajianPerawatan']['perawatPenerima'] = auth()->user()->myuser_name;
             $this->dataDaftarPoliRJ['anamnesa']['pengkajianPerawatan']['perawatPenerimaCode'] = auth()->user()->myuser_code;
+
+            // ✅ Auto-isi jam datang saat TTD perawat (hanya jika belum diisi)
+            if (empty($this->dataDaftarPoliRJ['anamnesa']['pengkajianPerawatan']['jamDatang'])) {
+                $this->dataDaftarPoliRJ['anamnesa']['pengkajianPerawatan']['jamDatang'] = now()->format('d/m/Y H:i:s');
+            }
+
             // 🔥 INCREMENT: Refresh untuk menampilkan perawat yang sudah di-set
             $this->incrementVersion('modal-anamnesa-rj');
         } else {
             $this->dispatch('toast', type: 'error', message: 'Hanya user dengan role Perawat yang dapat melakukan TTD-E.');
-        }
-    }
-
-    /* ===============================
-     | SET JAM DATANG
-     =============================== */
-    public function setJamDatang($time): void
-    {
-        if (!$this->isFormLocked) {
-            $this->dataDaftarPoliRJ['anamnesa']['pengkajianPerawatan']['jamDatang'] = $time;
-
-            // 🔥 INCREMENT: Refresh untuk menampilkan perawat yang sudah di-set
-            $this->incrementVersion('modal-anamnesa-rj');
         }
     }
 
