@@ -24,7 +24,6 @@ new class extends Component {
         $this->isLoading = true;
         $this->dataDaftarPoliRJ = [];
 
-        // Ambil data JSON RJ dari DB
         $dataRJ = $this->findDataRJ($rjNo);
         if (empty($dataRJ)) {
             $this->isLoading = false;
@@ -32,7 +31,6 @@ new class extends Component {
             return;
         }
 
-        // Ambil data pasien via regNo
         $pasienData = $this->findDataMasterPasien($dataRJ['regNo'] ?? '');
         if (empty($pasienData)) {
             $this->isLoading = false;
@@ -42,20 +40,17 @@ new class extends Component {
 
         $pasien = $pasienData['pasien'];
 
-        // Hitung umur realtime
         if (!empty($pasien['tglLahir'])) {
             $pasien['thn'] = Carbon::createFromFormat('d/m/Y', $pasien['tglLahir'])
                 ->diff(Carbon::now(env('APP_TIMEZONE')))
                 ->format('%y Thn, %m Bln %d Hr');
         }
 
-        // Ambil nama dokter
         $dokter = DB::table('rsmst_doctors')
             ->where('dr_id', $dataRJ['drId'] ?? '')
             ->select('dr_name')
             ->first();
 
-        // Simpan ke property agar bisa ditampilkan di blade
         $this->dataDaftarPoliRJ = array_merge($pasien, [
             'dataDaftarTxn' => $dataRJ,
             'namaDokter' => $dokter->dr_name ?? null,
@@ -98,12 +93,16 @@ new class extends Component {
 ?>
 
 <div>
-    {{-- ── MODAL PREVIEW REKAM MEDIS ─────────────────────────────────── --}}
     <x-modal name="preview-rekam-medis" size="full" height="full" focusable>
 
         @php
             $d = $this->dataDaftarPoliRJ;
             $txn = $d['dataDaftarTxn'] ?? [];
+
+            $lastNyeri = !empty($txn['penilaian']['nyeri']) ? end($txn['penilaian']['nyeri']) : null;
+            $lastResikoJatuh = !empty($txn['penilaian']['resikoJatuh']) ? end($txn['penilaian']['resikoJatuh']) : null;
+            $lastDekubitus = !empty($txn['penilaian']['dekubitus']) ? end($txn['penilaian']['dekubitus']) : null;
+            $lastGizi = !empty($txn['penilaian']['gizi']) ? end($txn['penilaian']['gizi']) : null;
         @endphp
 
         <div class="flex flex-col min-h-[calc(100vh-4rem)]" wire:key="preview-rekam-medis-{{ $rjNo }}">
@@ -167,22 +166,34 @@ new class extends Component {
                         );
                     @endphp
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-                        <p class="text-sm"><span class="text-sm text-gray-400">No. Rekam Medis : </span><span
-                                class="font-semibold text-gray-900 dark:text-gray-100">{{ $d['regNo'] ?? '-' }}</span>
+                        <p class="text-sm">
+                            <span class="text-sm text-gray-400">No. Rekam Medis : </span>
+                            <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $d['regNo'] ?? '-' }}</span>
                         </p>
-                        <p class="text-sm"><span class="text-sm text-gray-400">Nama Pasien : </span><span
+                        <p class="text-sm">
+                            <span class="text-sm text-gray-400">Nama Pasien : </span>
+                            <span
                                 class="font-semibold text-gray-900 dark:text-gray-100">{{ strtoupper($d['regName'] ?? '-') }}</span>
                         </p>
-                        <p class="text-sm"><span class="text-sm text-gray-400">Tanggal Masuk : </span><span
-                                class="text-gray-700 dark:text-gray-300">{{ $txn['rjDate'] ?? '-' }}</span></p>
-                        <p class="text-sm"><span class="text-sm text-gray-400">Jenis Kelamin : </span><span
+                        <p class="text-sm">
+                            <span class="text-sm text-gray-400">Tanggal Masuk : </span>
+                            <span class="text-gray-700 dark:text-gray-300">{{ $txn['rjDate'] ?? '-' }}</span>
+                        </p>
+                        <p class="text-sm">
+                            <span class="text-sm text-gray-400">Jenis Kelamin : </span>
+                            <span
                                 class="text-gray-700 dark:text-gray-300">{{ $d['jenisKelamin']['jenisKelaminDesc'] ?? '-' }}</span>
                         </p>
-                        <p class="text-sm"><span class="text-sm text-gray-400">Tempat, Tgl. Lahir : </span><span
-                                class="text-gray-700 dark:text-gray-300">{{ ($d['tempatLahir'] ?? '-') . ', ' . ($d['tglLahir'] ?? '-') . ' (' . ($d['thn'] ?? '-') . ')' }}</span>
+                        <p class="text-sm">
+                            <span class="text-sm text-gray-400">Tempat, Tgl. Lahir : </span>
+                            <span class="text-gray-700 dark:text-gray-300">
+                                {{ ($d['tempatLahir'] ?? '-') . ', ' . ($d['tglLahir'] ?? '-') . ' (' . ($d['thn'] ?? '-') . ')' }}
+                            </span>
                         </p>
-                        <p class="col-span-2 text-sm"><span class="text-sm text-gray-400">Alamat : </span><span
-                                class="text-gray-700 dark:text-gray-300">{{ $alamatFull }}</span></p>
+                        <p class="col-span-2 text-sm">
+                            <span class="text-sm text-gray-400">Alamat : </span>
+                            <span class="text-gray-700 dark:text-gray-300">{{ $alamatFull }}</span>
+                        </p>
                     </div>
                 </x-border-form>
 
@@ -203,11 +214,17 @@ new class extends Component {
                         $sm = $txn['anamnesa']['statusMental'] ?? [];
                     @endphp
                     <div class="space-y-2">
-                        <p class="text-sm"><span class="text-sm text-gray-400">Status Psikologis : </span><span
-                                class="text-gray-700 dark:text-gray-300">{{ $statPsiko . (!empty($sp['sebutstatusPsikologis']) ? ' — ' . $sp['sebutstatusPsikologis'] : '') ?: '-' }}</span>
+                        <p class="text-sm">
+                            <span class="text-sm text-gray-400">Status Psikologis : </span>
+                            <span class="text-gray-700 dark:text-gray-300">
+                                {{ $statPsiko . (!empty($sp['sebutstatusPsikologis']) ? ' — ' . $sp['sebutstatusPsikologis'] : '') ?: '-' }}
+                            </span>
                         </p>
-                        <p class="text-sm"><span class="text-sm text-gray-400">Status Mental : </span><span
-                                class="text-gray-700 dark:text-gray-300">{{ ($sm['statusMental'] ?? '-') . (!empty($sm['keteranganStatusMental']) ? ' — ' . $sm['keteranganStatusMental'] : '') }}</span>
+                        <p class="text-sm">
+                            <span class="text-sm text-gray-400">Status Mental : </span>
+                            <span class="text-gray-700 dark:text-gray-300">
+                                {{ ($sm['statusMental'] ?? '-') . (!empty($sm['keteranganStatusMental']) ? ' — ' . $sm['keteranganStatusMental'] : '') }}
+                            </span>
                         </p>
                     </div>
                 </x-border-form>
@@ -217,38 +234,90 @@ new class extends Component {
 
                     {{-- Anamnesa (2/3) --}}
                     <x-border-form title="Anamnesa" class="col-span-2">
-                        @php
-                            $nyeri = $txn['penilaian']['nyeri'] ?? [];
-                            $rj = $txn['penilaian']['resikoJatuh'] ?? [];
-                            $hd = $rj['skalaHumptyDumpty'] ?? [];
-                            $ms = $rj['skalaMorse'] ?? [];
-                        @endphp
                         <div class="space-y-2.5">
-                            <p class="text-sm"><span class="text-sm text-gray-400">Keluhan Utama : </span><span
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Keluhan Utama : </span>
+                                <span
                                     class="text-gray-700 dark:text-gray-300">{{ $txn['anamnesa']['keluhanUtama']['keluhanUtama'] ?? '-' }}</span>
                             </p>
-                            <p class="text-sm"><span class="text-sm text-gray-400">Screening Batuk : </span><span
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Screening Batuk : </span>
+                                <span
                                     class="text-gray-700 dark:text-gray-300">{{ $txn['anamnesa']['screeningBatuk'] ?? '-' }}</span>
                             </p>
-                            <p class="text-sm"><span class="text-sm text-gray-400">Skala Nyeri : </span><span
-                                    class="text-gray-700 dark:text-gray-300">VAS: {{ $nyeri['vas']['vas'] ?? '-' }} /
-                                    Pencetus: {{ $nyeri['pencetus'] ?? '-' }} / Durasi: {{ $nyeri['durasi'] ?? '-' }}
-                                    / Lokasi: {{ $nyeri['lokasi'] ?? '-' }}</span></p>
-                            <p class="text-sm"><span class="text-sm text-gray-400">Resiko Jatuh : </span><span
-                                    class="text-gray-700 dark:text-gray-300">Humpty Dumpty:
-                                    {{ $hd['skalaHumptyDumptyScore'] ?? '-' }}
-                                    ({{ $hd['skalaHumptyDumptyDesc'] ?? '-' }}) | Morse:
-                                    {{ $ms['skalaMorseScore'] ?? '-' }} ({{ $ms['skalaMorseDesc'] ?? '-' }})</span>
+
+                            {{-- Skala Nyeri --}}
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Skala Nyeri : </span>
+                                <span class="text-gray-700 dark:text-gray-300">
+                                    Metode: {{ $lastNyeri['nyeri']['nyeriMetode']['nyeriMetode'] ?? '-' }} /
+                                    Skor: {{ $lastNyeri['nyeri']['nyeriMetode']['nyeriMetodeScore'] ?? '-' }} /
+                                    {{ $lastNyeri['nyeri']['nyeriKet'] ?? '-' }} /
+                                    Pencetus: {{ $lastNyeri['nyeri']['pencetus'] ?? '-' }} /
+                                    Durasi: {{ $lastNyeri['nyeri']['durasi'] ?? '-' }} /
+                                    Lokasi: {{ $lastNyeri['nyeri']['lokasi'] ?? '-' }}
+                                </span>
                             </p>
-                            <p class="text-sm"><span class="text-sm text-gray-400">Riwayat Penyakit Sekarang :
-                                </span><span
+
+                            {{-- Resiko Jatuh --}}
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Resiko Jatuh : </span>
+                                <span class="text-gray-700 dark:text-gray-300">
+                                    Metode:
+                                    {{ $lastResikoJatuh['resikoJatuh']['resikoJatuhMetode']['resikoJatuhMetode'] ?? '-' }}
+                                    /
+                                    Skor:
+                                    {{ $lastResikoJatuh['resikoJatuh']['resikoJatuhMetode']['resikoJatuhMetodeScore'] ?? '-' }}
+                                    /
+                                    {{ $lastResikoJatuh['resikoJatuh']['kategoriResiko'] ?? '-' }}
+                                </span>
+                            </p>
+
+                            {{-- Dekubitus --}}
+                            @if ($lastDekubitus)
+                                <p class="text-sm">
+                                    <span class="text-sm text-gray-400">Dekubitus : </span>
+                                    <span class="text-gray-700 dark:text-gray-300">
+                                        {{ $lastDekubitus['dekubitus']['dekubitus'] ?? '-' }} /
+                                        Skor Braden: {{ $lastDekubitus['dekubitus']['bradenScore'] ?? '-' }} /
+                                        {{ $lastDekubitus['dekubitus']['kategoriResiko'] ?? '-' }}
+                                        @if (!empty($lastDekubitus['dekubitus']['rekomendasi']))
+                                            / {{ $lastDekubitus['dekubitus']['rekomendasi'] }}
+                                        @endif
+                                    </span>
+                                </p>
+                            @endif
+
+                            {{-- Gizi --}}
+                            @if ($lastGizi)
+                                <p class="text-sm">
+                                    <span class="text-sm text-gray-400">Gizi : </span>
+                                    <span class="text-gray-700 dark:text-gray-300">
+                                        BB: {{ $lastGizi['gizi']['beratBadan'] ?? '-' }} kg /
+                                        TB: {{ $lastGizi['gizi']['tinggiBadan'] ?? '-' }} cm /
+                                        IMT: {{ $lastGizi['gizi']['imt'] ?? '-' }} /
+                                        Skor Skrining: {{ $lastGizi['gizi']['skorSkrining'] ?? '-' }} /
+                                        {{ $lastGizi['gizi']['kategoriGizi'] ?? '-' }}
+                                        @if (!empty($lastGizi['gizi']['catatan']))
+                                            / {{ $lastGizi['gizi']['catatan'] }}
+                                        @endif
+                                    </span>
+                                </p>
+                            @endif
+
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Riwayat Penyakit Sekarang : </span>
+                                <span
                                     class="text-gray-700 dark:text-gray-300">{{ $txn['anamnesa']['riwayatPenyakitSekarangUmum']['riwayatPenyakitSekarangUmum'] ?? '-' }}</span>
                             </p>
-                            <p class="text-sm"><span class="text-sm text-gray-400">Riwayat Penyakit Dahulu :
-                                </span><span
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Riwayat Penyakit Dahulu : </span>
+                                <span
                                     class="text-gray-700 dark:text-gray-300">{{ $txn['anamnesa']['riwayatPenyakitDahulu']['riwayatPenyakitDahulu'] ?? '-' }}</span>
                             </p>
-                            <p class="text-sm"><span class="text-sm text-gray-400">Alergi : </span><span
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Alergi : </span>
+                                <span
                                     class="text-gray-700 dark:text-gray-300">{{ $txn['anamnesa']['alergi']['alergi'] ?? '-' }}</span>
                             </p>
 
@@ -301,34 +370,47 @@ new class extends Component {
                             @php $tv = $txn['pemeriksaan']['tandaVital'] ?? []; @endphp
                             <div class="space-y-2">
                                 <p class="flex justify-between pb-1.5 border-b border-gray-100 dark:border-gray-800">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">TD</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ ($tv['sistolik'] ?? '-') . ' / ' . ($tv['distolik'] ?? '-') }}
-                                        <span class="text-sm font-normal text-gray-400">mmHg</span></span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">TD</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ ($tv['sistolik'] ?? '-') . ' / ' . ($tv['distolik'] ?? '-') }}
+                                        <span class="text-sm font-normal text-gray-400">mmHg</span>
+                                    </span>
                                 </p>
                                 <p class="flex justify-between pb-1.5 border-b border-gray-100 dark:border-gray-800">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Nadi</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $tv['frekuensiNadi'] ?? '-' }}
-                                        <span class="text-sm font-normal text-gray-400">x/mnt</span></span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Nadi</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $tv['frekuensiNadi'] ?? '-' }}
+                                        <span class="text-sm font-normal text-gray-400">x/mnt</span>
+                                    </span>
                                 </p>
                                 <p class="flex justify-between pb-1.5 border-b border-gray-100 dark:border-gray-800">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Suhu</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $tv['suhu'] ?? '-' }}
-                                        <span class="text-sm font-normal text-gray-400">°C</span></span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Suhu</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $tv['suhu'] ?? '-' }}
+                                        <span class="text-sm font-normal text-gray-400">°C</span>
+                                    </span>
                                 </p>
                                 <p class="flex justify-between pb-1.5 border-b border-gray-100 dark:border-gray-800">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Pernafasan</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $tv['frekuensiNafas'] ?? '-' }}
-                                        <span class="text-sm font-normal text-gray-400">x/mnt</span></span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Pernafasan</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $tv['frekuensiNafas'] ?? '-' }}
+                                        <span class="text-sm font-normal text-gray-400">x/mnt</span>
+                                    </span>
                                 </p>
                                 <p class="flex justify-between pb-1.5 border-b border-gray-100 dark:border-gray-800">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">SPO2</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $tv['spo2'] ?? '-' }}
-                                        <span class="text-sm font-normal text-gray-400">%</span></span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">SPO2</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $tv['spo2'] ?? '-' }}
+                                        <span class="text-sm font-normal text-gray-400">%</span>
+                                    </span>
                                 </p>
-                                <p class="flex justify-between"><span
-                                        class="text-sm text-gray-500 dark:text-gray-400">GDA</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $tv['gda'] ?? '-' }}
-                                        <span class="text-sm font-normal text-gray-400">mg/dL</span></span></p>
+                                <p class="flex justify-between">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">GDA</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $tv['gda'] ?? '-' }}
+                                        <span class="text-sm font-normal text-gray-400">mg/dL</span>
+                                    </span>
+                                </p>
                             </div>
                         </x-border-form>
 
@@ -336,29 +418,40 @@ new class extends Component {
                             @php $nut = $txn['pemeriksaan']['nutrisi'] ?? []; @endphp
                             <div class="space-y-2">
                                 <p class="flex justify-between pb-1.5 border-b border-gray-100 dark:border-gray-800">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Berat Badan</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $nut['bb'] ?? '-' }}
-                                        <span class="text-sm font-normal text-gray-400">Kg</span></span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Berat Badan</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $nut['bb'] ?? '-' }}
+                                        <span class="text-sm font-normal text-gray-400">Kg</span>
+                                    </span>
                                 </p>
                                 <p class="flex justify-between pb-1.5 border-b border-gray-100 dark:border-gray-800">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Tinggi Badan</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $nut['tb'] ?? '-' }}
-                                        <span class="text-sm font-normal text-gray-400">cm</span></span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Tinggi Badan</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $nut['tb'] ?? '-' }}
+                                        <span class="text-sm font-normal text-gray-400">cm</span>
+                                    </span>
                                 </p>
                                 <p class="flex justify-between pb-1.5 border-b border-gray-100 dark:border-gray-800">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">IMT</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $nut['imt'] ?? '-' }}
-                                        <span class="text-sm font-normal text-gray-400">Kg/M²</span></span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">IMT</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $nut['imt'] ?? '-' }}
+                                        <span class="text-sm font-normal text-gray-400">Kg/M²</span>
+                                    </span>
                                 </p>
                                 <p class="flex justify-between pb-1.5 border-b border-gray-100 dark:border-gray-800">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Lingkar Kepala</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $nut['lk'] ?? '-' }}
-                                        <span class="text-sm font-normal text-gray-400">cm</span></span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Lingkar Kepala</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $nut['lk'] ?? '-' }}
+                                        <span class="text-sm font-normal text-gray-400">cm</span>
+                                    </span>
                                 </p>
-                                <p class="flex justify-between"><span
-                                        class="text-sm text-gray-500 dark:text-gray-400">Lingkar Lengan</span><span
-                                        class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $nut['lila'] ?? '-' }}
-                                        <span class="text-sm font-normal text-gray-400">cm</span></span></p>
+                                <p class="flex justify-between">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Lingkar Lengan</span>
+                                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $nut['lila'] ?? '-' }}
+                                        <span class="text-sm font-normal text-gray-400">cm</span>
+                                    </span>
+                                </p>
                             </div>
                         </x-border-form>
                     </div>
@@ -378,14 +471,21 @@ new class extends Component {
                     <x-border-form title="Fungsional">
                         @php $fn = $txn['pemeriksaan']['fungsional'] ?? []; @endphp
                         <div class="space-y-2">
-                            <p class="text-sm"><span class="text-sm text-gray-400">Alat Bantu : </span><span
-                                    class="text-gray-700 dark:text-gray-300">{{ $fn['alatBantu'] ?? '-' }}</span></p>
-                            <p class="text-sm"><span class="text-sm text-gray-400">Prothesa : </span><span
-                                    class="text-gray-700 dark:text-gray-300">{{ $fn['prothesa'] ?? '-' }}</span></p>
-                            <p class="text-sm"><span class="text-sm text-gray-400">Cacat Tubuh : </span><span
-                                    class="text-gray-700 dark:text-gray-300">{{ $fn['cacatTubuh'] ?? '-' }}</span></p>
-                            <p class="text-sm"><span class="text-sm text-gray-400">Suspek Kecelakaan Kerja :
-                                </span><span
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Alat Bantu : </span>
+                                <span class="text-gray-700 dark:text-gray-300">{{ $fn['alatBantu'] ?? '-' }}</span>
+                            </p>
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Prothesa : </span>
+                                <span class="text-gray-700 dark:text-gray-300">{{ $fn['prothesa'] ?? '-' }}</span>
+                            </p>
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Cacat Tubuh : </span>
+                                <span class="text-gray-700 dark:text-gray-300">{{ $fn['cacatTubuh'] ?? '-' }}</span>
+                            </p>
+                            <p class="text-sm">
+                                <span class="text-sm text-gray-400">Suspek Kecelakaan Kerja : </span>
+                                <span
                                     class="text-gray-700 dark:text-gray-300">{{ $fn['suspekKecelakaanKerja'] ?? '-' }}</span>
                             </p>
                         </div>
@@ -396,7 +496,9 @@ new class extends Component {
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <x-border-form title="Pemeriksaan Fisik & Uji Fungsi">
                         <p class="text-sm text-gray-700 whitespace-pre-line dark:text-gray-300">
-                            {{ $txn['pemeriksaan']['fisik'] ?? '-' }}</p>
+                            {{ $txn['pemeriksaan']['fisik'] ?? '-' }}
+                            {{ $txn['pemeriksaan']['FisikujiFungsi']['FisikujiFungsi'] ?? '' }}
+                        </p>
                     </x-border-form>
 
                     <x-border-form title="Anatomi">
@@ -418,13 +520,19 @@ new class extends Component {
                 {{-- PENUNJANG + DIAGNOSIS + PROSEDUR --}}
                 <x-border-form class="mb-4">
                     <div class="space-y-2">
-                        <p class="text-sm"><span class="text-sm text-gray-400">Penunjang : </span><span
+                        <p class="text-sm">
+                            <span class="text-sm text-gray-400">Penunjang : </span>
+                            <span
                                 class="text-gray-700 dark:text-gray-300">{{ $txn['pemeriksaan']['penunjang'] ?? '-' }}</span>
                         </p>
-                        <p class="text-sm"><span class="text-sm text-gray-400">Diagnosis : </span><span
+                        <p class="text-sm">
+                            <span class="text-sm text-gray-400">Diagnosis : </span>
+                            <span
                                 class="font-semibold text-gray-900 dark:text-gray-100">{{ $txn['diagnosisFreeText'] ?? '-' }}</span>
                         </p>
-                        <p class="text-sm"><span class="text-sm text-gray-400">Prosedur : </span><span
+                        <p class="text-sm">
+                            <span class="text-sm text-gray-400">Prosedur : </span>
+                            <span
                                 class="text-gray-700 dark:text-gray-300">{{ $txn['procedureFreeText'] ?? '-' }}</span>
                         </p>
                     </div>
@@ -443,7 +551,8 @@ new class extends Component {
 
                     <x-border-form title="Terapi">
                         <p class="text-sm text-gray-800 whitespace-pre-line dark:text-gray-200">
-                            {{ $txn['perencanaan']['terapi']['terapi'] ?? '-' }}</p>
+                            {{ $txn['perencanaan']['terapi']['terapi'] ?? '-' }}
+                        </p>
                     </x-border-form>
                 </div>
 

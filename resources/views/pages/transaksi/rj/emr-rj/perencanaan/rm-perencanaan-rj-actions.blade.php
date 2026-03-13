@@ -144,37 +144,6 @@ new class extends Component {
     }
 
     /* ===============================
-     | GENERATE TERAPI DARI RESEP
-     =============================== */
-    private function generateTerapiFromResep(): void
-    {
-        $eresep = '';
-        if (isset($this->dataDaftarPoliRJ['eresep'])) {
-            foreach ($this->dataDaftarPoliRJ['eresep'] as $value) {
-                $catatanKhusus = $value['catatanKhusus'] ?? '' ? ' (' . $value['catatanKhusus'] . ')' : '';
-                $eresep .= 'R/' . ' ' . ($value['productName'] ?? '') . ' | No. ' . ($value['qty'] ?? '') . ' | S ' . ($value['signaX'] ?? '') . 'dd' . ($value['signaHari'] ?? '') . $catatanKhusus . PHP_EOL;
-            }
-        }
-
-        $eresepRacikan = '';
-        if (isset($this->dataDaftarPoliRJ['eresepRacikan'])) {
-            foreach ($this->dataDaftarPoliRJ['eresepRacikan'] as $value) {
-                if (isset($value['jenisKeterangan'])) {
-                    $catatan = $value['catatan'] ?? '';
-                    $catatanKhusus = $value['catatanKhusus'] ?? '';
-                    $noRacikan = $value['noRacikan'] ?? '';
-                    $productName = $value['productName'] ?? '';
-                    $jmlRacikan = $value['qty'] ?? '' ? 'Jml Racikan ' . $value['qty'] . ' | ' . $catatan . ' | S ' . $catatanKhusus . PHP_EOL : '';
-                    $dosis = $value['dosis'] ?? '';
-                    $eresepRacikan .= $noRacikan . '/ ' . $productName . ' - ' . $dosis . PHP_EOL . $jmlRacikan;
-                }
-            }
-        }
-
-        $this->dataDaftarPoliRJ['perencanaan']['terapi']['terapi'] = $eresep . $eresepRacikan;
-    }
-
-    /* ===============================
      | CLOSE MODAL
      =============================== */
     public function closeModal(): void

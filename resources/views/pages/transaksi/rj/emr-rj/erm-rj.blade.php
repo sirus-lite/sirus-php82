@@ -46,6 +46,7 @@ new class extends Component {
         $this->dispatch('open-modal', name: 'rm-perawat-actions');
         $this->dispatch('open-rm-anamnesa-rj', $rjNo);
         $this->dispatch('open-rm-pemeriksaan-rj', $rjNo);
+        $this->dispatch('open-rm-penilaian-rj', $rjNo);
         $this->dispatch('open-rm-diagnosa-rj', $rjNo);
         $this->dispatch('open-rm-perencanaan-rj', $rjNo);
     }
@@ -158,7 +159,7 @@ new class extends Component {
                                 wire:key="emr-rj-display-pasien-rj-{{ $rjNo }}" />
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid grid-cols-3 gap-2">
 
                             {{-- ANAMNESA COMPONENT --}}
                             <livewire:pages::transaksi.rj.emr-rj.anamnesa.rm-anamnesa-rj-actions :rjNo="$rjNo"
@@ -167,6 +168,10 @@ new class extends Component {
                             {{-- PEMERIKSAAN COMPONENT --}}
                             <livewire:pages::transaksi.rj.emr-rj.pemeriksaan.rm-pemeriksaan-rj-actions :rjNo="$rjNo"
                                 wire:key="pemeriksaan-rj-{{ $rjNo }}" />
+
+                            {{-- PENILAIAN COMPONENT --}}
+                            <livewire:pages::transaksi.rj.emr-rj.penilaian.rm-penilaian-rj-actions :rjNo="$rjNo"
+                                wire:key="penilaian-rj-{{ $rjNo }}" />
                         </div>
 
 

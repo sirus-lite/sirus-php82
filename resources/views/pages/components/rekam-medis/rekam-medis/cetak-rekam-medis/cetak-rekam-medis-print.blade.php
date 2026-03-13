@@ -60,7 +60,13 @@
     {{-- ================================================================ --}}
     {{-- ASSESMENT AWAL RAWAT JALAN                                        --}}
     {{-- ================================================================ --}}
-    @php $txn = $data['dataDaftarTxn']; @endphp
+    @php
+        $txn = $data['dataDaftarTxn'];
+        $lastNyeri = !empty($txn['penilaian']['nyeri']) ? end($txn['penilaian']['nyeri']) : null;
+        $lastResikoJatuh = !empty($txn['penilaian']['resikoJatuh']) ? end($txn['penilaian']['resikoJatuh']) : null;
+        $lastDekubitus = !empty($txn['penilaian']['dekubitus']) ? end($txn['penilaian']['dekubitus']) : null;
+        $lastGizi = !empty($txn['penilaian']['gizi']) ? end($txn['penilaian']['gizi']) : null;
+    @endphp
 
     <table class="w-full text-[10px] border-collapse">
 
@@ -106,23 +112,50 @@
                 <span class="font-bold">Screening Batuk :</span>
                 {{ $txn['anamnesa']['screeningBatuk'] ?? '-' }}
                 <br>
+
+                {{-- ── SKALA NYERI ── --}}
                 <span class="font-bold">Skala Nyeri :</span>
-                VAS : {{ $txn['penilaian']['nyeri']['vas']['vas'] ?? '-' }} /
-                Pencetus : {{ $txn['penilaian']['nyeri']['pencetus'] ?? '-' }} /
-                Durasi : {{ $txn['penilaian']['nyeri']['durasi'] ?? '-' }} /
-                Lokasi : {{ $txn['penilaian']['nyeri']['lokasi'] ?? '-' }}
+                Metode : {{ $lastNyeri['nyeri']['nyeriMetode']['nyeriMetode'] ?? '-' }} /
+                Skor : {{ $lastNyeri['nyeri']['nyeriMetode']['nyeriMetodeScore'] ?? '-' }} /
+                {{ $lastNyeri['nyeri']['nyeriKet'] ?? '-' }} /
+                Pencetus : {{ $lastNyeri['nyeri']['pencetus'] ?? '-' }} /
+                Durasi : {{ $lastNyeri['nyeri']['durasi'] ?? '-' }} /
+                Lokasi : {{ $lastNyeri['nyeri']['lokasi'] ?? '-' }}
                 <br>
+
+                {{-- ── RESIKO JATUH ── --}}
                 <span class="font-bold">Resiko Jatuh :</span>
-                Skala Humpty Dumpty / Total Skor :
-                {{ $txn['penilaian']['resikoJatuh']['skalaHumptyDumpty']['skalaHumptyDumptyScore'] ?? '-' }} /
-                {{ $txn['penilaian']['resikoJatuh']['skalaHumptyDumpty']['skalaHumptyDumptyDesc'] ?? '-' }}
+                Metode : {{ $lastResikoJatuh['resikoJatuh']['resikoJatuhMetode']['resikoJatuhMetode'] ?? '-' }} /
+                Skor : {{ $lastResikoJatuh['resikoJatuh']['resikoJatuhMetode']['resikoJatuhMetodeScore'] ?? '-' }} /
+                {{ $lastResikoJatuh['resikoJatuh']['kategoriResiko'] ?? '-' }}
                 <br>
-                <span class="pl-36">
-                    Skala Morse / Total Skor :
-                    {{ $txn['penilaian']['resikoJatuh']['skalaMorse']['skalaMorseScore'] ?? '-' }} /
-                    {{ $txn['penilaian']['resikoJatuh']['skalaMorse']['skalaMorseDesc'] ?? '-' }}
-                </span>
-                <br>
+
+                {{-- ── DEKUBITUS (tampil hanya jika ada data) ── --}}
+                @if ($lastDekubitus)
+                    <span class="font-bold">Dekubitus :</span>
+                    {{ $lastDekubitus['dekubitus']['dekubitus'] ?? '-' }} /
+                    Skor Braden : {{ $lastDekubitus['dekubitus']['bradenScore'] ?? '-' }} /
+                    {{ $lastDekubitus['dekubitus']['kategoriResiko'] ?? '-' }}
+                    @if (!empty($lastDekubitus['dekubitus']['rekomendasi']))
+                        / {{ $lastDekubitus['dekubitus']['rekomendasi'] }}
+                    @endif
+                    <br>
+                @endif
+
+                {{-- ── GIZI (tampil hanya jika ada data) ── --}}
+                @if ($lastGizi)
+                    <span class="font-bold">Gizi :</span>
+                    BB : {{ $lastGizi['gizi']['beratBadan'] ?? '-' }} kg /
+                    TB : {{ $lastGizi['gizi']['tinggiBadan'] ?? '-' }} cm /
+                    IMT : {{ $lastGizi['gizi']['imt'] ?? '-' }} /
+                    Skor Skrining : {{ $lastGizi['gizi']['skorSkrining'] ?? '-' }} /
+                    {{ $lastGizi['gizi']['kategoriGizi'] ?? '-' }}
+                    @if (!empty($lastGizi['gizi']['catatan']))
+                        / {{ $lastGizi['gizi']['catatan'] }}
+                    @endif
+                    <br>
+                @endif
+
                 <span class="font-bold">Riwayat Penyakit Sekarang :</span>
                 {!! nl2br(e($txn['anamnesa']['riwayatPenyakitSekarangUmum']['riwayatPenyakitSekarangUmum'] ?? '-')) !!}
                 <br>
