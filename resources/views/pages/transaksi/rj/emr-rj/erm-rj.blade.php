@@ -197,23 +197,24 @@ new class extends Component {
                                 </x-badge>
                             @endif
                         </div>
-
-                        @if (!empty($dataDaftarPoliRJ['sep']['noSep']))
-                            <x-primary-button type="button"
-                                wire:click="myiCare('{{ $dataDaftarPoliRJ['sep']['noSep'] }}')"
-                                wire:loading.attr="disabled" wire:target="myiCare" class="text-sm px-3 py-1.5">
-                                <span wire:loading.remove wire:target="myiCare" class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                    i-Care
-                                </span>
-                                <span wire:loading wire:target="myiCare" class="flex items-center gap-1">
-                                    <x-loading /> Memuat...
-                                </span>
-                            </x-primary-button>
-                        @endif
+                        @role(['Dokter', 'Admin'])
+                            @if (!empty($dataDaftarPoliRJ['sep']['noSep']))
+                                <x-primary-button type="button"
+                                    wire:click="myiCare('{{ $dataDaftarPoliRJ['sep']['noSep'] }}')"
+                                    wire:loading.attr="disabled" wire:target="myiCare" class="text-sm px-3 py-1.5">
+                                    <span wire:loading.remove wire:target="myiCare" class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                        i-Care
+                                    </span>
+                                    <span wire:loading wire:target="myiCare" class="flex items-center gap-1">
+                                        <x-loading /> Memuat...
+                                    </span>
+                                </x-primary-button>
+                            @endif
+                        @endrole
                     </div>
 
                     {{-- Close button --}}
