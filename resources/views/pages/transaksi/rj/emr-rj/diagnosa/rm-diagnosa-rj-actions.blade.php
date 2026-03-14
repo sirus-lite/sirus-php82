@@ -333,174 +333,150 @@ new class extends Component {
 
 ?>
 
-<div class="flex flex-col min-h-[calc(100vh-8rem)]"
-    wire:key="{{ $this->renderKey('modal-diagnosis-rj', [$rjNo ?? 'new']) }}">
+<div class="space-y-4" wire:key="{{ $this->renderKey('modal-diagnosis-rj', [$rjNo ?? 'new']) }}">
 
-    {{-- BODY --}}
-    <div class="w-full mx-auto">
-        <div
-            class="w-full p-4 space-y-6 bg-white border border-gray-200 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-700">
+    {{-- DIAGNOSIS ICD-10 --}}
+    <x-border-form :title="__('Diagnosis (ICD-10)')" :align="__('start')" :bgcolor="__('bg-gray-50')">
+        <div class="mt-4 space-y-4">
 
-            {{-- DIAGNOSIS SECTION --}}
-            <div class="w-full">
-                <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Diagnosis (ICD-10)</h3>
-
-                {{-- LOV DIAGNOSA --}}
-                <div class="mb-4">
-                    <livewire:lov.diagnosa.lov-diagnosa label="Cari Diagnosis" target="rjFormDiagnosaRm" :initialDiagnosaId="$diagnosaId ?? null"
-                        :disabled="$isFormLocked" wire:key="lov-diagnosa-{{ $this->renderKey('modal-diagnosis-rj') }}" />
-                </div>
-
-                {{-- FREE TEXT DIAGNOSA --}}
-                <div class="mb-4">
-                    <x-input-label for="diagnosis_freetext" :value="__('Free Text Diagnosis')" class="mb-2" />
-                    <x-textarea id="diagnosis_freetext"
-                        wire:key="diagnosis-freetext-{{ $this->renderKey('modal-diagnosis-rj') }}"
-                        wire:model.live="dataDaftarPoliRJ.diagnosisFreeText" :error="$errors->has('dataDaftarPoliRJ.diagnosisFreeText')" class="w-full mt-1"
-                        rows="2" placeholder="Masukkan diagnosa free text..." :disabled="$isFormLocked" />
-                </div>
-
-                {{-- LIST DIAGNOSA --}}
-                @if (!empty($dataDaftarPoliRJ['diagnosis']))
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                            <thead
-                                class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3">Diagnosis</th>
-                                    <th scope="col" class="px-6 py-3">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($dataDaftarPoliRJ['diagnosis'] as $index => $diagnosa)
-                                    <tr wire:key="diagnosa-row-{{ $diagnosa['rjDtlDtl'] ?? $index }}-{{ $this->renderKey('modal-diagnosis-rj') }}"
-                                        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                        <td
-                                            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            <div>{{ $diagnosa['diagId'] ?? ($diagnosa['icdX'] ?? '') }}
-                                                {{ $diagnosa['diagDesc'] ?? '' }}</div>
-                                            <x-badge
-                                                variant="{{ ($diagnosa['kategoriDiagnosa'] ?? 'Secondary') == 'Primary' ? 'success' : 'warning' }}">
-                                                {{ $diagnosa['kategoriDiagnosa'] ?? 'Secondary' }}
-                                            </x-badge>
-                                        </td>
-
-
-                                        </td>
-
-                                        <td class="px-6 py-4">
-                                            @if (!$isFormLocked)
-                                                <button type="button"
-                                                    wire:click="removeDiagnosaICD10({{ $diagnosa['rjDtlDtl'] }})"
-                                                    wire:confirm="Yakin ingin menghapus diagnosa ini?"
-                                                    class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div wire:key="diagnosa-empty-{{ $this->renderKey('modal-diagnosis-rj') }}"
-                        class="p-4 text-sm text-center text-gray-500 rounded-lg bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        Belum ada diagnosa
-                    </div>
-                @endif
+            {{-- LOV Diagnosa --}}
+            <div>
+                <livewire:lov.diagnosa.lov-diagnosa label="Cari Diagnosis" target="rjFormDiagnosaRm" :initialDiagnosaId="$diagnosaId ?? null"
+                    :disabled="$isFormLocked" wire:key="lov-diagnosa-{{ $this->renderKey('modal-diagnosis-rj') }}" />
             </div>
 
-            {{-- DIVIDER --}}
-            <hr class="my-6 border-gray-200 dark:border-gray-700">
-
-            {{-- PROCEDURE SECTION --}}
-            <div class="w-full">
-                <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Procedure (ICD-9-CM)</h3>
-
-                {{-- LOV PROSEDUR --}}
-                <div class="mb-4">
-                    <livewire:lov.procedure.lov-procedure label="Cari Prosedur" target="rjFormProsedurRm"
-                        :initialProcedureId="$procedureId ?? null" :disabled="$isFormLocked"
-                        wire:key="lov-procedure-{{ $this->renderKey('modal-diagnosis-rj') }}" />
-                </div>
-
-                {{-- FREE TEXT PROCEDURE --}}
-                <div class="mb-4">
-                    <x-input-label for="procedure_freetext" :value="__('Free Text Procedure')" class="mb-2" />
-                    <x-textarea id="procedure_freetext"
-                        wire:key="procedure-freetext-{{ $this->renderKey('modal-diagnosis-rj') }}"
-                        wire:model.live="dataDaftarPoliRJ.procedureFreeText" :error="$errors->has('dataDaftarPoliRJ.procedureFreeText')" class="w-full mt-1"
-                        rows="2" placeholder="Masukkan procedure free text..." :disabled="$isFormLocked" />
-                </div>
-
-                {{-- LIST PROCEDURE --}}
-                @if (!empty($dataDaftarPoliRJ['procedure']))
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                            <thead
-                                class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3">Procedure</th>
-                                    <th scope="col" class="px-6 py-3">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($dataDaftarPoliRJ['procedure'] as $index => $procedure)
-                                    <tr wire:key="procedure-row-{{ $procedure['procedureId'] }}-{{ $this->renderKey('modal-diagnosis-rj') }}"
-                                        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                        <td
-                                            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            <div>{{ $procedure['procedureId'] ?? '' }}
-                                                {{ $procedure['procedureDesc'] ?? '' }}</div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            @if (!$isFormLocked)
-                                                <button type="button"
-                                                    wire:click="removeProcedureICD9Cm('{{ $procedure['procedureId'] }}')"
-                                                    wire:confirm="Yakin ingin menghapus procedure {{ $procedure['procedureId'] }}?"
-                                                    class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div wire:key="procedure-empty-{{ $this->renderKey('modal-diagnosis-rj') }}"
-                        class="p-4 text-sm text-center text-gray-500 rounded-lg bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        Belum ada procedure
-                    </div>
-                @endif
+            {{-- Free Text Diagnosa --}}
+            <div>
+                <x-input-label for="diagnosis_freetext" value="Free Text Diagnosis" />
+                <x-textarea id="diagnosis_freetext"
+                    wire:key="diagnosis-freetext-{{ $this->renderKey('modal-diagnosis-rj') }}"
+                    wire:model.live="dataDaftarPoliRJ.diagnosisFreeText" :error="$errors->has('dataDaftarPoliRJ.diagnosisFreeText')"
+                    placeholder="Masukkan diagnosa free text..." :disabled="$isFormLocked" rows="2" class="w-full mt-1" />
             </div>
 
-            {{-- ACTION BUTTONS --}}
-            @if (!$isFormLocked)
-                <div class="flex justify-end gap-2 pt-4">
-                    <button type="button" wire:click="save" wire:loading.attr="disabled"
-                        class="text-white bg-primary hover:bg-primary-dark focus:ring-4 focus:outline-none focus:ring-primary-light font-medium rounded-lg text-sm px-5 py-2.5 text-center">
-                        <span wire:loading.remove wire:target="save">Simpan</span>
-                        <span wire:loading wire:target="save">Menyimpan...</span>
-                    </button>
-                    <button type="button" wire:click="closeModal"
-                        class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">
-                        Tutup
-                    </button>
+            {{-- List Diagnosa --}}
+            @if (!empty($dataDaftarPoliRJ['diagnosis']))
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full text-xs text-left text-gray-600 dark:text-gray-300">
+                        <thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                            <tr>
+                                <th class="px-3 py-2 font-medium">Diagnosis</th>
+                                <th class="px-3 py-2 font-medium">Kategori</th>
+                                @if (!$isFormLocked)
+                                    <th class="px-3 py-2 font-medium"></th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @foreach ($dataDaftarPoliRJ['diagnosis'] as $index => $diagnosa)
+                                <tr wire:key="diagnosa-row-{{ $diagnosa['rjDtlDtl'] ?? $index }}-{{ $this->renderKey('modal-diagnosis-rj') }}"
+                                    class="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                    <td class="px-3 py-2 font-medium text-gray-800 dark:text-white">
+                                        {{ $diagnosa['diagId'] ?? ($diagnosa['icdX'] ?? '') }}
+                                        {{ $diagnosa['diagDesc'] ?? '' }}
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        <x-badge
+                                            variant="{{ ($diagnosa['kategoriDiagnosa'] ?? 'Secondary') === 'Primary' ? 'success' : 'warning' }}">
+                                            {{ $diagnosa['kategoriDiagnosa'] ?? 'Secondary' }}
+                                        </x-badge>
+                                    </td>
+                                    @if (!$isFormLocked)
+                                        <td class="px-3 py-2">
+                                            <x-icon-button variant="danger"
+                                                wire:click="removeDiagnosaICD10({{ $diagnosa['rjDtlDtl'] }})"
+                                                wire:confirm="Yakin ingin menghapus diagnosa ini?" tooltip="Hapus">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </x-icon-button>
+                                        </td>
+                                    @endif
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
+            @else
+                <p wire:key="diagnosa-empty-{{ $this->renderKey('modal-diagnosis-rj') }}"
+                    class="text-xs text-center text-gray-400 py-4">
+                    Belum ada diagnosa.
+                </p>
             @endif
+
         </div>
-    </div>
+    </x-border-form>
+
+    {{-- PROCEDURE ICD-9-CM --}}
+    <x-border-form :title="__('Procedure (ICD-9-CM)')" :align="__('start')" :bgcolor="__('bg-gray-50')">
+        <div class="mt-4 space-y-4">
+
+            {{-- LOV Prosedur --}}
+            <div>
+                <livewire:lov.procedure.lov-procedure label="Cari Prosedur" target="rjFormProsedurRm" :initialProcedureId="$procedureId ?? null"
+                    :disabled="$isFormLocked" wire:key="lov-procedure-{{ $this->renderKey('modal-diagnosis-rj') }}" />
+            </div>
+
+            {{-- Free Text Procedure --}}
+            <div>
+                <x-input-label for="procedure_freetext" value="Free Text Procedure" />
+                <x-textarea id="procedure_freetext"
+                    wire:key="procedure-freetext-{{ $this->renderKey('modal-diagnosis-rj') }}"
+                    wire:model.live="dataDaftarPoliRJ.procedureFreeText" :error="$errors->has('dataDaftarPoliRJ.procedureFreeText')"
+                    placeholder="Masukkan procedure free text..." :disabled="$isFormLocked" rows="2"
+                    class="w-full mt-1" />
+            </div>
+
+            {{-- List Procedure --}}
+            @if (!empty($dataDaftarPoliRJ['procedure']))
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full text-xs text-left text-gray-600 dark:text-gray-300">
+                        <thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                            <tr>
+                                <th class="px-3 py-2 font-medium">Procedure</th>
+                                @if (!$isFormLocked)
+                                    <th class="px-3 py-2 font-medium"></th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @foreach ($dataDaftarPoliRJ['procedure'] as $index => $procedure)
+                                <tr wire:key="procedure-row-{{ $procedure['procedureId'] }}-{{ $this->renderKey('modal-diagnosis-rj') }}"
+                                    class="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700">
+                                    <td class="px-3 py-2 font-medium text-gray-800 dark:text-white">
+                                        {{ $procedure['procedureId'] ?? '' }}
+                                        {{ $procedure['procedureDesc'] ?? '' }}
+                                    </td>
+                                    @if (!$isFormLocked)
+                                        <td class="px-3 py-2">
+                                            <x-icon-button variant="danger"
+                                                wire:click="removeProcedureICD9Cm('{{ $procedure['procedureId'] }}')"
+                                                wire:confirm="Yakin ingin menghapus procedure {{ $procedure['procedureId'] }}?"
+                                                tooltip="Hapus">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </x-icon-button>
+                                        </td>
+                                    @endif
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p wire:key="procedure-empty-{{ $this->renderKey('modal-diagnosis-rj') }}"
+                    class="text-xs text-center text-gray-400 py-4">
+                    Belum ada procedure.
+                </p>
+            @endif
+
+        </div>
+    </x-border-form>
 </div>

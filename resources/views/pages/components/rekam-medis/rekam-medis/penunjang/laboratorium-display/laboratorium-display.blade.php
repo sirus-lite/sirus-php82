@@ -402,7 +402,7 @@ new class extends Component {
                 {{-- Tabel Pemeriksaan Laboratorium --}}
                 <div class="flex flex-col my-2">
                     <div class="overflow-x-auto rounded-lg">
-                        <div class="inline-block min-w-full align-middle">
+                        <div class="w-full">
                             <div class="mb-2 overflow-hidden shadow sm:rounded-lg">
                                 <table class="w-full text-sm text-left text-gray-500 table-auto dark:text-gray-400">
                                     <thead
@@ -477,8 +477,8 @@ new class extends Component {
                                                     class="px-4 py-4 text-gray-900 transition-colors group-hover:bg-gray-50 dark:text-gray-100 dark:group-hover:bg-gray-750">
 
                                                     {{-- Header Row --}}
-                                                    <div class="flex items-start justify-between">
-                                                        <div class="flex items-center space-x-2">
+                                                    <div class="flex items-start justify-between gap-2 flex-wrap">
+                                                        <div class="flex items-center space-x-2 min-w-0 flex-1">
                                                             <span class="text-2xl">{{ $layananIcon }}</span>
                                                             <div>
                                                                 <div class="flex flex-wrap items-center gap-2">
@@ -500,7 +500,7 @@ new class extends Component {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="text-sm text-right text-gray-500 shrink-0">
+                                                        <div class="text-sm text-right text-gray-500">
                                                             <div>{{ $row->checkup_date }}</div>
                                                         </div>
                                                     </div>
@@ -624,8 +624,10 @@ new class extends Component {
 
                             {{-- Pagination --}}
                             @if ($regNo && $this->rows->hasPages())
-                                <div class="mt-4">
-                                    {{ $this->rows->links() }}
+                                <div class="mt-4 overflow-hidden w-full">
+                                    <div class="overflow-x-auto">
+                                        {{ $this->rows->links() }}
+                                    </div>
                                 </div>
                             @endif
                         </div>

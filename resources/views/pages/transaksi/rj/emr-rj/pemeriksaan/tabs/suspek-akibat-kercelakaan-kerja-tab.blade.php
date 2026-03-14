@@ -1,17 +1,22 @@
-{{-- SUSPEK AKIBAT KERJA --}}
-<div class="mb-2">
-    <x-input-label for="dataDaftarPoliRJ.pemeriksaan.suspekAkibatKerja.keteranganSuspekAkibatKerja" :value="__('Suspek Penyakit Akibat Kecelakaan Kerja')"
-        :required="__(false)" />
+<x-border-form :title="__('Suspek Penyakit Akibat Kecelakaan Kerja')" :align="__('start')" :bgcolor="__('bg-gray-50')">
+    <div class="mt-4 space-y-3">
 
-    <div class="grid grid-cols-3 gap-2 mb-2">
-        @foreach ($dataDaftarPoliRJ['pemeriksaan']['suspekAkibatKerja']['suspekAkibatKerjaOptions'] ?? [] as $suspekAkibatKerjaOption)
-            <x-radio-button :label="__($suspekAkibatKerjaOption['suspekAkibatKerja'])" :value="$suspekAkibatKerjaOption['suspekAkibatKerja']" name="suspekAkibatKerja"
-                wire:model.live="suspekAkibatKerja" :disabled="$isFormLocked" />
-        @endforeach
+        {{-- Radio Options --}}
+        <div class="flex flex-wrap gap-3">
+            @foreach ($dataDaftarPoliRJ['pemeriksaan']['suspekAkibatKerja']['suspekAkibatKerjaOptions'] ?? [] as $suspekAkibatKerjaOption)
+                <x-radio-button :label="$suspekAkibatKerjaOption['suspekAkibatKerja']" :value="$suspekAkibatKerjaOption['suspekAkibatKerja']" name="suspekAkibatKerja"
+                    wire:model.live="suspekAkibatKerja" :disabled="$isFormLocked" />
+            @endforeach
+        </div>
 
-        <x-text-input id="keteranganSuspekAkibatKerja" placeholder="Keterangan" class="mt-1 ml-2" :error="$errors->has('dataDaftarPoliRJ.pemeriksaan.suspekAkibatKerja.keteranganSuspekAkibatKerja')"
-            :disabled="$isFormLocked ?? false"
-            wire:model.live="dataDaftarPoliRJ.pemeriksaan.suspekAkibatKerja.keteranganSuspekAkibatKerja" />
-        <x-input-error :messages="$errors->get('dataDaftarPoliRJ.pemeriksaan.suspekAkibatKerja.keteranganSuspekAkibatKerja')" class="mt-1" />
+        {{-- Keterangan --}}
+        <div>
+            <x-input-label value="Keterangan" />
+            <x-text-input id="keteranganSuspekAkibatKerja"
+                wire:model.live="dataDaftarPoliRJ.pemeriksaan.suspekAkibatKerja.keteranganSuspekAkibatKerja"
+                placeholder="Keterangan" :error="$errors->has('dataDaftarPoliRJ.pemeriksaan.suspekAkibatKerja.keteranganSuspekAkibatKerja')" :disabled="$isFormLocked" class="w-full mt-1" />
+            <x-input-error :messages="$errors->get('dataDaftarPoliRJ.pemeriksaan.suspekAkibatKerja.keteranganSuspekAkibatKerja')" class="mt-1" />
+        </div>
+
     </div>
-</div>
+</x-border-form>

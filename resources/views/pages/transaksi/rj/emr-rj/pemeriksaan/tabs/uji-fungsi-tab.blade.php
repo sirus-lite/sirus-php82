@@ -1,13 +1,12 @@
-<div class="w-full mb-1">
-    <div class="pt-0">
-        <x-input-label for="dataDaftarPoliRJ.pemeriksaan.FisikujiFungsi.FisikujiFungsi" :value="__('Pemeriksaan Fisik dan Uji Fungsi')"
-            :required="__(false)" class="pt-2 sm:text-xl" />
+<x-border-form :title="__('Pemeriksaan Fisik dan Uji Fungsi')" :align="__('start')" :bgcolor="__('bg-gray-50')">
+    <div class="mt-4">
 
-        <div class="mb-2">
-            <x-textarea id="dataDaftarPoliRJ.pemeriksaan.FisikujiFungsi.FisikujiFungsi"
-                placeholder="Pemeriksaan Fisik dan Uji Fungsi" class="mt-1 ml-2" :error="$errors->has('dataDaftarPoliRJ.pemeriksaan.FisikujiFungsi.FisikujiFungsi')" :disabled="$isFormLocked"
-                wire:model.live="dataDaftarPoliRJ.pemeriksaan.FisikujiFungsi.FisikujiFungsi" rows="3" />
-            <x-input-error :messages="$errors->get('dataDaftarPoliRJ.pemeriksaan.FisikujiFungsi.FisikujiFungsi')" class="mt-1" />
-        </div>
+        <x-textarea id="dataDaftarPoliRJ.pemeriksaan.FisikujiFungsi.FisikujiFungsi"
+            wire:model.live="dataDaftarPoliRJ.pemeriksaan.FisikujiFungsi.FisikujiFungsi"
+            placeholder="Pemeriksaan Fisik dan Uji Fungsi" :error="$errors->has('dataDaftarPoliRJ.pemeriksaan.FisikujiFungsi.FisikujiFungsi')" :disabled="$isFormLocked" rows="3"
+            class="w-full" />
+
+        <x-input-error :messages="$errors->get('dataDaftarPoliRJ.pemeriksaan.FisikujiFungsi.FisikujiFungsi')" class="mt-1" />
+
     </div>
-</div>
+</x-border-form>

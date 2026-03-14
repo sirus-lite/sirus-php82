@@ -1,104 +1,121 @@
-<div class="pt-0">
+<div class="space-y-4">
+
     {{-- TANDA VITAL --}}
-    <div>
-        <x-input-label :value="__('Keadaan Umum')" class="pt-2 sm:text-xl" />
-        <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-            {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['keadaanUmum'] ?? '-' }}
-        </p>
+    <x-border-form :title="__('Tanda Vital')" :align="__('start')" :bgcolor="__('bg-gray-50')">
+        <div class="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
 
-        <x-input-label :value="__('Tingkat Kesadaran')" class="pt-2" />
-        <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-            {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['tingkatKesadaran'] ?? '-' }}
-        </p>
-
-        <x-input-label :value="__('Tanda Vital')" class="pt-2 sm:text-xl" />
-
-        <x-input-label :value="__('Tekanan Darah')" class="pt-2" />
-        <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-            {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['sistolik'] ?? '-' }} mmHg
-            /
-            {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['distolik'] ?? '-' }} mmHg
-        </p>
-
-        <div class="grid grid-cols-2 gap-2 pt-2">
-            <div>
-                <x-input-label :value="__('Frekuensi Nadi')" />
-                <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['frekuensiNadi'] ?? '-' }} X/Menit
-                </p>
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Keadaan Umum</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['keadaanUmum'] ?? '-' }}
+                </span>
             </div>
-            <div>
-                <x-input-label :value="__('Frekuensi Nafas')" />
-                <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['frekuensiNafas'] ?? '-' }} X/Menit
-                </p>
+
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Tingkat Kesadaran</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['tingkatKesadaran'] ?? '-' }}
+                </span>
             </div>
+
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Tekanan Darah</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['sistolik'] ?? '-' }}
+                    /
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['distolik'] ?? '-' }}
+                    <span class="text-xs text-gray-400">mmHg</span>
+                </span>
+            </div>
+
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Frekuensi Nadi</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['frekuensiNadi'] ?? '-' }}
+                    <span class="text-xs text-gray-400">x/menit</span>
+                </span>
+            </div>
+
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Frekuensi Nafas</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['frekuensiNafas'] ?? '-' }}
+                    <span class="text-xs text-gray-400">x/menit</span>
+                </span>
+            </div>
+
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Suhu</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['suhu'] ?? '-' }}
+                    <span class="text-xs text-gray-400">°C</span>
+                </span>
+            </div>
+
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">SPO2</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['spo2'] ?? '-' }}
+                    <span class="text-xs text-gray-400">%</span>
+                </span>
+            </div>
+
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">GDA</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['gda'] ?? '-' }}
+                    <span class="text-xs text-gray-400">g/dl</span>
+                </span>
+            </div>
+
         </div>
-
-        <div class="grid grid-cols-2 gap-2 pt-2">
-            <div>
-                <x-input-label :value="__('Suhu')" />
-                <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['suhu'] ?? '-' }} °C
-                </p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 pt-2">
-            <div>
-                <x-input-label :value="__('SPO2')" />
-                <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['spo2'] ?? '-' }} %
-                </p>
-            </div>
-            <div>
-                <x-input-label :value="__('GDA')" />
-                <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-                    {{ $dataDaftarPoliRJ['pemeriksaan']['tandaVital']['gda'] ?? '-' }} g/dl
-                </p>
-            </div>
-        </div>
-    </div>
+    </x-border-form>
 
     {{-- NUTRISI --}}
-    <div>
-        <x-input-label :value="__('Nutrisi')" class="pt-2 sm:text-xl" />
+    <x-border-form :title="__('Nutrisi')" :align="__('start')" :bgcolor="__('bg-gray-50')">
+        <div class="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
 
-        <div class="grid grid-cols-3 gap-2 pt-2">
-            <div>
-                <x-input-label :value="__('Berat Badan')" />
-                <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-                    {{ $dataDaftarPoliRJ['pemeriksaan']['nutrisi']['bb'] ?? '-' }} Kg
-                </p>
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Berat Badan</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['nutrisi']['bb'] ?? '-' }}
+                    <span class="text-xs text-gray-400">Kg</span>
+                </span>
             </div>
-            <div>
-                <x-input-label :value="__('Tinggi Badan')" />
-                <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-                    {{ $dataDaftarPoliRJ['pemeriksaan']['nutrisi']['tb'] ?? '-' }} Cm
-                </p>
-            </div>
-            <div>
-                <x-input-label :value="__('Index Masa Tubuh')" />
-                <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-                    {{ $dataDaftarPoliRJ['pemeriksaan']['nutrisi']['imt'] ?? '-' }} Kg/M2
-                </p>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-2 gap-2 pt-2">
-            <div>
-                <x-input-label :value="__('Lingkar Kepala')" />
-                <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-                    {{ $dataDaftarPoliRJ['pemeriksaan']['nutrisi']['lk'] ?? '-' }} Cm
-                </p>
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Tinggi Badan</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['nutrisi']['tb'] ?? '-' }}
+                    <span class="text-xs text-gray-400">Cm</span>
+                </span>
             </div>
-            <div>
-                <x-input-label :value="__('Lingkar Lengan Atas')" />
-                <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-                    {{ $dataDaftarPoliRJ['pemeriksaan']['nutrisi']['lila'] ?? '-' }} Cm
-                </p>
+
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Index Masa Tubuh</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['nutrisi']['imt'] ?? '-' }}
+                    <span class="text-xs text-gray-400">Kg/M²</span>
+                </span>
             </div>
+
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Lingkar Kepala</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['nutrisi']['lk'] ?? '-' }}
+                    <span class="text-xs text-gray-400">Cm</span>
+                </span>
+            </div>
+
+            <div class="py-3 grid grid-cols-3 gap-2 items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Lingkar Lengan Atas</span>
+                <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {{ $dataDaftarPoliRJ['pemeriksaan']['nutrisi']['lila'] ?? '-' }}
+                    <span class="text-xs text-gray-400">Cm</span>
+                </span>
+            </div>
+
         </div>
-    </div>
+    </x-border-form>
 
 </div>

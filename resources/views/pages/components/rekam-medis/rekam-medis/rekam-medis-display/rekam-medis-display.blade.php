@@ -408,7 +408,7 @@ new class extends Component {
                 <!-- Table Resume Medis -->
                 <div class="flex flex-col my-2">
                     <div class="overflow-x-auto rounded-lg">
-                        <div class="inline-block min-w-full align-middle">
+                        <div class="w-full">
                             <div class="mb-2 overflow-hidden shadow sm:rounded-lg">
                                 <table class="w-full text-sm text-left text-gray-500 table-auto dark:text-gray-400">
                                     <thead
@@ -464,18 +464,18 @@ new class extends Component {
                                                     class="px-4 py-4 text-gray-900 transition-colors group-hover:bg-gray-50">
 
                                                     {{-- ✅ FIX: Header row pakai flex-col agar tanggal tidak overflow --}}
-                                                    <div class="flex flex-col gap-1">
+                                                    <div class="flex justify-between gap-1 min-w-0">
 
                                                         {{-- Baris atas: icon + status + nama + badge --}}
-                                                        <div class="flex items-center min-w-0 gap-2">
+                                                        <div class="flex items-center min-w-0 gap-2 flex-wrap">
                                                             <span class="text-2xl shrink-0">{{ $statusIcon }}</span>
                                                             <div
                                                                 class="flex items-center flex-wrap min-w-0 gap-x-2 gap-y-1">
                                                                 <span
                                                                     class="font-bold shrink-0 {{ $statusClass }}">{{ $statusText }}</span>
                                                                 <span class="text-gray-400 shrink-0">|</span>
-                                                                <span
-                                                                    class="font-medium truncate">{{ $myQData->reg_name }}</span>
+                                                                {{-- <span
+                                                                    class="font-medium truncate">{{ $myQData->reg_name }}</span> --}}
 
                                                                 @if (!empty($datadaftar_json['statusPRB']['penanggungJawab']['statusPRB']))
                                                                     <span
@@ -593,7 +593,7 @@ new class extends Component {
                                                         <div class="grid grid-cols-2 gap-2 mt-3">
                                                             <div class="grid grid-cols-1 gap-2">
                                                                 @if ($isRJ)
-                                                                    <div class="grid grid-cols-2 gap-2">
+                                                                    <div class="grid grid-cols-1 gap-2">
                                                                         <x-primary-button type="button"
                                                                             wire:click="copyResep('{{ $myQData->txn_no }}','{{ $myQData->layanan_status }}')"
                                                                             class="text-sm px-3 py-1.5">
@@ -649,7 +649,7 @@ new class extends Component {
                                                             </div>
 
                                                             @if (!empty($datadaftar_json['sep']['noSep']))
-                                                                <span class="text-sm text-right text-gray-500">
+                                                                <span class="text-sm text-right text-gray-500 break-all">
                                                                     SEP: {{ $datadaftar_json['sep']['noSep'] }}
                                                                 </span>
                                                             @endif
@@ -681,7 +681,7 @@ new class extends Component {
 
                             {{-- Pagination --}}
                             @if ($regNo && $this->rows->hasPages())
-                                <div class="mt-4">
+                                <div class="mt-4 w-full overflow-x-auto">
                                     {{ $this->rows->links() }}
                                 </div>
                             @endif

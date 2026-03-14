@@ -1,63 +1,59 @@
-<div class="w-full mb-1">
-    <div class="pt-0">
-        <x-input-label for="dataDaftarPoliRJ.pemeriksaan.anatomi" :value="__('Anatomi')" :required="__(false)"
-            class="pt-2 sm:text-xl" />
+<x-border-form :title="__('Anatomi')" :align="__('start')" :bgcolor="__('bg-gray-50')">
+    <div class="mt-4" x-data="{ activeTabAnatomi: '{{ array_key_first($dataDaftarPoliRJ['pemeriksaan']['anatomi']) }}' }">
 
-        <div id="TransaksiRawatJalan" x-data="{ activeTabAnatomi: 'kepala' }" class="flex">
-            <div class="w-[200px] h-80 overflow-auto">
+        <div class="flex gap-4">
+
+            {{-- SIDEBAR TABS --}}
+            <div
+                class="w-44 shrink-0 overflow-y-auto max-h-80 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                 @foreach ($dataDaftarPoliRJ['pemeriksaan']['anatomi'] as $key => $pAnatomi)
-                    <div class="flex px-2 mb-2 border-b border-gray-200 dark:border-gray-700">
-                        <ul class="inline -mb-px text-xs font-medium text-center text-gray-500">
-                            <li class="mr-2">
-                                <label
-                                    class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer hover:text-gray-600 hover:border-gray-300"
-                                    :class="activeTabAnatomi === '{{ $key }}'
-                                        ?
-                                        'text-primary border-primary bg-gray-100' :
-                                        ''"
-                                    @click="activeTabAnatomi ='{{ $key }}'">{{ strtoupper($key) }}</label>
-                            </li>
-                        </ul>
-                    </div>
+                    <button type="button" @click="activeTabAnatomi = '{{ $key }}'"
+                        class="w-full text-left px-3 py-2.5 text-xs font-medium border-b border-gray-100 dark:border-gray-700 transition-colors last:border-0"
+                        :class="activeTabAnatomi === '{{ $key }}'
+                            ?
+                            'bg-brand text-white' :
+                            'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800'">
+                        {{ strtoupper($key) }}
+                    </button>
                 @endforeach
             </div>
 
-            <div class="w-full">
+            {{-- PANEL KONTEN --}}
+            <div class="flex-1 min-w-0">
                 @foreach ($dataDaftarPoliRJ['pemeriksaan']['anatomi'] as $key => $pAnatomi)
-                    <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800"
-                        :class="{
-                            'active': activeTabAnatomi === '{{ $key }}'
-                        }"
-                        x-show.transition.in.opacity.duration.600="activeTabAnatomi === '{{ $key }}'">
+                    <div x-show="activeTabAnatomi === '{{ $key }}'"
+                        x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100" class="space-y-3">
 
-                        <x-input-label for="dataDaftarPoliRJ.pemeriksaan.anatomi.{{ $key }}.kelainan"
-                            :value="__(strtoupper($key))" :required="__(false)" />
-
-                        <div class="mt-2 ml-2">
+                        {{-- Kelainan --}}
+                        <div>
+                            <x-input-label :value="__(strtoupper($key) . ' — Kelainan')" />
                             <x-select-input id="kelainan-{{ $key }}"
-                                wire:model.live="dataDaftarPoliRJ.pemeriksaan.anatomi.{{ $key }}.kelainan">
+                                wire:model.live="dataDaftarPoliRJ.pemeriksaan.anatomi.{{ $key }}.kelainan"
+                                :disabled="$isFormLocked" class="w-full mt-1">
                                 @foreach ($pAnatomi['kelainanOptions'] as $kelainanOptions)
                                     <option value="{{ $kelainanOptions['kelainan'] }}">
-                                        {{ __($kelainanOptions['kelainan']) }}
+                                        {{ $kelainanOptions['kelainan'] }}
                                     </option>
                                 @endforeach
                             </x-select-input>
+                            <x-input-error :messages="$errors->get('dataDaftarPoliRJ.pemeriksaan.anatomi.' . $key . '.kelainan')" class="mt-1" />
                         </div>
 
-                        {{-- Error untuk radio button kelainan --}}
-                        <x-input-error :messages="$errors->get('dataDaftarPoliRJ.pemeriksaan.anatomi.' . $key . '.kelainan')" class="mt-1" />
-
-                        <div class="mt-2">
+                        {{-- Deskripsi --}}
+                        <div>
+                            <x-input-label value="Deskripsi" />
                             <x-textarea id="dataDaftarPoliRJ.pemeriksaan.anatomi.{{ $key }}.desc"
-                                placeholder="{{ strtoupper($key) }}" class="mt-1 ml-2" :error="$errors->has('dataDaftarPoliRJ.pemeriksaan.anatomi.' . $key . '.desc')"
-                                :disabled="$isFormLocked"
                                 wire:model.live="dataDaftarPoliRJ.pemeriksaan.anatomi.{{ $key }}.desc"
-                                rows="3" />
+                                placeholder="{{ strtoupper($key) }}" :error="$errors->has('dataDaftarPoliRJ.pemeriksaan.anatomi.' . $key . '.desc')" :disabled="$isFormLocked" rows="4"
+                                class="w-full mt-1" />
                             <x-input-error :messages="$errors->get('dataDaftarPoliRJ.pemeriksaan.anatomi.' . $key . '.desc')" class="mt-1" />
                         </div>
+
                     </div>
                 @endforeach
             </div>
+
         </div>
     </div>
-</div>
+</x-border-form>

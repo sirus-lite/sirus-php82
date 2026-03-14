@@ -1,26 +1,29 @@
-<div>
-    {{-- Field Perawat Penerima --}}
-    <div class="mb-2">
-        <x-input-label :value="__('Perawat Penerima')" class="pt-2" />
-        <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200">
-            {{ $dataDaftarPoliRJ['anamnesa']['pengkajianPerawatan']['perawatPenerima'] ?? '-' }}
-        </p>
-    </div>
-    {{-- Field Waktu Datang --}}
-    <div class="mb-2">
-        <p class="mt-2 ml-2 text-xs text-gray-500 dark:text-gray-400">
-            Waktu Datang:
-            <span class="font-medium text-gray-700 dark:text-gray-200">
+<x-border-form :title="__('Pengkajian')" :align="__('start')" :bgcolor="__('bg-gray-50')">
+    <div class="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
+
+        {{-- Perawat Penerima --}}
+        <div class="py-3 grid grid-cols-3 gap-2 items-start">
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Perawat Penerima</span>
+            <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+                {{ $dataDaftarPoliRJ['anamnesa']['pengkajianPerawatan']['perawatPenerima'] ?? '-' }}
+            </span>
+        </div>
+
+        {{-- Waktu Datang --}}
+        <div class="py-3 grid grid-cols-3 gap-2 items-start">
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Waktu Datang</span>
+            <span class="col-span-2 text-sm font-medium text-gray-800 dark:text-gray-200">
                 {{ $dataDaftarPoliRJ['anamnesa']['pengkajianPerawatan']['jamDatang'] ?? '-' }}
             </span>
-        </p>
-    </div>
+        </div>
 
-    {{-- Field Keluhan Utama --}}
-    <div class="mb-2">
-        <x-input-label :value="__('Keluhan Utama')" class="pt-2" />
-        <p class="mt-1 ml-2 text-sm text-gray-800 dark:text-gray-200 whitespace-pre-line">
-            {{ $dataDaftarPoliRJ['anamnesa']['keluhanUtama']['keluhanUtama'] ?? '-' }}
-        </p>
+        {{-- Keluhan Utama --}}
+        <div class="py-3 grid grid-cols-3 gap-2 items-start">
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Keluhan Utama</span>
+            <span class="col-span-2 text-sm text-gray-800 dark:text-gray-200 whitespace-pre-line">
+                {{ $dataDaftarPoliRJ['anamnesa']['keluhanUtama']['keluhanUtama'] ?? '-' }}
+            </span>
+        </div>
+
     </div>
-</div>
+</x-border-form>
